@@ -1,5 +1,6 @@
-#### HomeWork-01 
+#### Homework-01 
 
-Test3 
-Test4\n
-Test5
+''' <br>
+sudo systemctl stop postgresql <br>
+''' <br> 
+
