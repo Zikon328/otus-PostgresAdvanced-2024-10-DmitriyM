@@ -7,11 +7,41 @@ c параметрами vCPU=2/vRAM=4G/vHDD=40G
     Воспользуемся под <b>Windows</b> терминалом <b>MobaXTerm</b> <br>
     Подключимся локальной сессией (псевдо Linux) и создадим ключи ssh    
 
-        ssh-keygen -t ed25519
+        /home/mobaxterm > ssh-keygen -t ed25519
+        Generating public/private ed25519 key pair.
+        Enter file in which to save the key (/home/mobaxterm/.ssh/id_ed25519):
+        Enter passphrase (empty for no passphrase):
+        Enter same passphrase again:
+        Your identification has been saved in /home/mobaxterm/.ssh/id_ed25519
+        Your public key has been saved in /home/mobaxterm/.ssh/id_ed25519.pub
+        The key fingerprint is:
+        SHA256:yNFYNoA/D1BihpJNy3aU6LCm0DNNLxylSizmI21pxro User@DESKTOP-TFJ0G4S
+        The key's randomart image is:
+        +--[ED25519 256]--+
+        | +.o==+.+        |
+        |+o+=*o = .       |
+        |.B*+o=o .        |
+        |=B=++.=o         |
+        |=oOo .o+S        |
+        |o=.     .        |
+        |.                |
+        | .               |
+        |E                |
+        +----[SHA256]-----+
+
 
     Копируем ключи на виртуальную машину      
 
-        ssh-copy-id -i id_ed25519.pub boss@192.168.1.244
+        /home/mobaxterm > ssh-copy-id boss@192.168.1.244
+        /bin/ssh-copy-id: INFO: Source of key(s) to be installed: "./.ssh/id_ed25519.pub"
+        /bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+        /bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+        stty: standard input: Inappropriate ioctl for device
+
+        Number of key(s) added: 1
+
+        Now try logging into the machine, with:   "ssh 'boss@192.168.1.244'"
+        and check to make sure that only the key(s) you wanted were added.
 
     При настройке новых подключений используем закрытый ключ (файл id_ed25519)
 - установить PostgreSQL 
