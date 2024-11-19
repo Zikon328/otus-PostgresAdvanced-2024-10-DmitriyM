@@ -1,6 +1,8 @@
 #### Homework-01 
 
-''' <br>
-sudo systemctl stop postgresql <br>
-''' <br> 
+
+```bash
+sudo systemctl stop postgresql
+sudo 
+``` 
 
