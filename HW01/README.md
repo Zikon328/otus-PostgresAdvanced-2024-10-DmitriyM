@@ -22,4 +22,4 @@ The background color is `#ffffff` for light mode and `#000000` for dark mode.
 
 <span style="color:blue">some *blue* text</span>
 
-$\textsf{\color{orange}Create my home}$ <br>
+$\textsf{\color{orange}Create \color{red}my home}$ <br>
