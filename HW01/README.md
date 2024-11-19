@@ -1,9 +1,9 @@
 $\textsf{\color{blue}Домашнее задание - SQL и реляционные СУБД}$
 
-- создал виртуальную машину в гипервизоре VMWare ESXi 
+- создать виртуальную машину в гипервизоре VMWare ESXi 
 c параметрами vCPU=2/vRAM=4G/vHDD=40G
-- установил ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
-- настроил доступ по ssh ключу <br>
+- установить ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
+- настроить доступ по ssh ключу <br>
     Воспользуемся под <b>Windows</b> терминалом <b>MobaXTerm</b> <br>
     Подключимся локальной сессией (псевдо Linux) и создадим ключи ssh    
 
@@ -14,7 +14,7 @@ c параметрами vCPU=2/vRAM=4G/vHDD=40G
         ssh-copy-id -i id_ed25519.pub boss@192.168.1.244
 
     При настройке новых подключений используем закрытый ключ (файл id_ed25519)
-- установка PostgreSQL 
+- установить PostgreSQL 
   
     Установим версию PostgreSQL_1C из репозитория PostgresPro
       <details><summary><i>Подробнее о данной версии</i></summary>
@@ -72,6 +72,43 @@ $\textsf{\color{orange}Подключимся второй сессией ssh}$
     Вы подключены к базе данных "postgres" как пользователь "postgres".
     postgres=#
 ```
+
+$\textsf{\color{darkgreen}Первая сессия}$
+```
+    boss@ubutest:~$ sudo su - postgres
+    postgres@ubutest:~$ psql
+    psql (16.4)
+    Введите "help", чтобы получить справку.
+
+    postgres=# \c
+    Вы подключены к базе данных "postgres" как пользователь "postgres".
+    postgres=#
+```
+Выключаем auto commit
+```
+    postgres=# create database otus1;
+    CREATE DATABASE
+    postgres=# \c otus1
+    Вы подключены к базе данных "otus1" как пользователь "postgres".
+    otus1=# \set autocommit off
+    otus1=# \echo :autocommit
+    off
+    otus1=#
+```
+Создаём таблицу и заполняем её данными
+```
+    otus1=# begin;
+    BEGIN
+    otus1=*# create table persons(id serial, first_name text, second_name text);
+    insert into persons(first_name, second_name) values('ivan', 'ivanov');
+    insert into persons(first_name, second_name) values('petr', 'petrov');
+    CREATE TABLE
+    INSERT 0 1
+    INSERT 0 1
+    otus1=*# commit;
+    COMMIT
+```
+Посмотрим текущий уровень изоляции
 
 
 New string
