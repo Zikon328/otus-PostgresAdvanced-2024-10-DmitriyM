@@ -1,4 +1,4 @@
-$\textsf{\color{blue}Домашнее задание - SQL и реляционные СУБД}$
+### Домашнее задание - SQL и реляционные СУБД
 
 - создать виртуальную машину в гипервизоре VMWare ESXi 
 c параметрами vCPU=2/vRAM=4G/vHDD=40G
@@ -73,7 +73,7 @@ $\textsf{\color{orange}Подключимся второй сессией ssh}$
     postgres=#
 ```
 
-$\textsf{\color{darkgreen}Первая сессия}$
+$\textsf{\color{blue}Первая сессия}$
 ```
     boss@ubutest:~$ sudo su - postgres
     postgres@ubutest:~$ psql
@@ -84,7 +84,7 @@ $\textsf{\color{darkgreen}Первая сессия}$
     Вы подключены к базе данных "postgres" как пользователь "postgres".
     postgres=#
 ```
-Выключаем auto commit
+$\textsf{\color{blue}Выключаем auto commit}$
 ```
     postgres=# create database otus1;
     CREATE DATABASE
@@ -95,7 +95,7 @@ $\textsf{\color{darkgreen}Первая сессия}$
     off
     otus1=#
 ```
-Создаём таблицу и заполняем её данными
+$\textsf{\color{blue}Создаём таблицу и заполняем её данными}$
 ```
     otus1=# begin;
     BEGIN
@@ -108,7 +108,7 @@ $\textsf{\color{darkgreen}Первая сессия}$
     otus1=*# commit;
     COMMIT
 ```
-Посмотрим текущий уровень изоляции
+$\textsf{\color{blue}Посмотрим текущий уровень изоляции}$
 
 
 New string
