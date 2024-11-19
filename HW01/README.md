@@ -3,23 +3,17 @@
 
 ```bash
 sudo systemctl stop postgresql
-sudo 
+sudo test
 ``` 
 
-<style>
-blue {
-  color: lightblue;
-}
+<details>
+  <summary>Подробное подключение по ssh </summary>
 
-red {
-  color: red;
-}
+  ```bash
+  You can add text within a collapsed section. 
+  You can add an image or a code block, too.
+  ``` 
+</details>
 
-green {
-  color: lightgreen;
-}
-</style>
-
-A <blue>very</blue> long <red>sentence</red>. <br>
-<green>bobbyhadz</green>.com
+New string
 
