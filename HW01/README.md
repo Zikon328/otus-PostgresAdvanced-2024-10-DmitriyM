@@ -7,7 +7,7 @@ sudo test
 ``` 
 
 <details>
-  <summary>Подробное подключение по ssh </summary>
+  <summary>__Подробное подключение по ssh__</summary>
 
   ```bash
   You can add text within a collapsed section. 
