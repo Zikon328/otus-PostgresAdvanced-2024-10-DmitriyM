@@ -22,5 +22,5 @@ The background color is `#ffffff` for light mode and `#000000` for dark mode.
 
 <span style="color:blue">some *blue* text</span>
 
-$\textsf{\color{darkblue}Create \large{\texttt{in a different 
+$\textsf{\color{blue}Create \LARGE{\texttt{in a different 
 font style}} \color{darkgreen}my home}$ <br>
