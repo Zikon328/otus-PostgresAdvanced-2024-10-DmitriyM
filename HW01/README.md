@@ -20,4 +20,6 @@ New string
 The background color is `#ffffff` for light mode and `#000000` for dark mode.
 
 
+<span style="color:blue">some *blue* text</span>
 
+${\color{red}Пример \space текста \space здесь}$ <br>
