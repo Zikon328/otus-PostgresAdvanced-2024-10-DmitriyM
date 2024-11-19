@@ -6,15 +6,15 @@ c параметрами vCPU=2/vRAM=4G/vHDD=40G
 - настроил доступ по ssh ключу
   <details>
     <summary><i>Подробное подключение по ssh</i></summary>
-      Воспользуемся под <b>Windows</b> терминалом <b>MobaXTerm</b>
-      Подключимся локальной сессией (псевдо Linux) и создадим ключи ssh
-      ```bash
-      ssh-keygen -t ed25519
-      ``` 
-      Копируем ключи на виртуальную машину  
-      ```bash
-      ssh-copy-id -i id_ed25519.pub boss@192.168.1.244
-      ```
+      Воспользуемся под <b>Windows</b> терминалом <b>MobaXTerm</b> <br>
+      Подключимся локальной сессией (псевдо Linux) и создадим ключи ssh    
+
+        ssh-keygen -t ed25519
+
+      Копируем ключи на виртуальную машину      
+
+        ssh-copy-id -i id_ed25519.pub boss@192.168.1.244
+
   </details>
 
 
