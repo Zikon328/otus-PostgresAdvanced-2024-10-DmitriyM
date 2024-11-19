@@ -102,10 +102,10 @@ $\textsf{\color{orange}Подключимся второй сессией ssh}$
     Вы подключены к базе данных "postgres" как пользователь "postgres".
     postgres=#select version();
                                              version
---------------------------------------------------------------------------------------------------
- PostgreSQL 16.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0, 64-bit
-(1 строка)
-postgres=#
+    --------------------------------------------------------------------------------------------------
+     PostgreSQL 16.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0, 64-bit
+    (1 строка)
+    postgres=#
 ```
 
 $\textsf{\color{blue}Первая сессия}$
