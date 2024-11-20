@@ -119,7 +119,7 @@ $\textsf{\color{blue}Первая сессия}$
     Вы подключены к базе данных "postgres" как пользователь "postgres".
     postgres=#
 ```
-$\textsf{\color{blue}Выключаем auto commit}$
+$\textsf{\color{blue}Создаём тестовую базу и выключаем auto commit}$
 ```
     postgres=# create database otus1;
     CREATE DATABASE
@@ -130,7 +130,7 @@ $\textsf{\color{blue}Выключаем auto commit}$
     off
     otus1=#
 ```
-$\textsf{\color{blue}Создаём таблицу и заполняем её данными}$
+$\textsf{\color{blue}В тестовой БД создаём таблицу и заполняем её данными}$
 ```
     otus1=# begin;
     BEGIN
@@ -153,6 +153,9 @@ $\textsf{\color{blue}Посмотрим текущий уровень изоля
 ```
 Начать новую транзакцию в обеих сессиях
 ```
+    otus1=# begin;
+    BEGIN
+    otus1=*#
 ```
 $\textsf{\color{blue}Добавить запись ( первая сессия )}$
 ```
