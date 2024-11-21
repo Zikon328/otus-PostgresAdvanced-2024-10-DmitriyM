@@ -103,10 +103,10 @@
                  ├─20807 "postgres: autovacuum launcher "
                  └─20808 "postgres: logical replication launcher "
 
-    ноя 19 10:43:23 ubutest systemd[1]: Starting postgrespro-1c-16.service - Postgres Pro 1c 16 database server...
-    ноя 19 10:43:23 ubutest postgres[20787]: 2024-11-19 10:43:23.497 UTC [20787] СООБЩЕНИЕ:  передача вывода в протокол процессу сбора прото>
-    ноя 19 10:43:23 ubutest postgres[20787]: 2024-11-19 10:43:23.497 UTC [20787] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в катал>
-    ноя 19 10:43:23 ubutest systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
+    ноя 17 12:43:23 ubutest systemd[1]: Starting postgrespro-1c-16.service - Postgres Pro 1c 16 database server...
+    ноя 17 12:43:23 ubutest postgres[20787]: 2024-11-19 10:43:23.497 UTC [20787] СООБЩЕНИЕ:  передача вывода в протокол процессу сбора прото>
+    ноя 17 12:43:23 ubutest postgres[20787]: 2024-11-19 10:43:23.497 UTC [20787] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в катал>
+    ноя 17 12:43:23 ubutest systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
 ```
 
 
