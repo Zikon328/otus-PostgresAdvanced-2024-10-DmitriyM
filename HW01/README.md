@@ -3,7 +3,7 @@
 - создать виртуальную машину в гипервизоре VMWare ESXi 
   c параметрами vCPU=2/vRAM=4G/vHDD=40G
   <details><summary><i> О системе</i></summary>
-    ![Изображение](../Images/hw-01-01.jpg)
+    <img src=../Images/hw-01-01.jpg alt='Параметры ВМ'>
   </details>
 - установить ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
   <details><summary><i> Аннотация терминала </i></summary>
