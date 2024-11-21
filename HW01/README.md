@@ -1,8 +1,27 @@
 ### Домашнее задание - SQL и реляционные СУБД
 
 - создать виртуальную машину в гипервизоре VMWare ESXi 
-c параметрами vCPU=2/vRAM=4G/vHDD=40G
+  c параметрами vCPU=2/vRAM=4G/vHDD=40G
+  <details><summary><i> О системе</i></summary>
+    ![Изображение](../Images/hw-01-01.jpg)
+  </details>
 - установить ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
+  <details><summary><i> Аннотация терминала </i></summary>
+  
+        Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-49-generic x86_64)
+
+         * Documentation:  https://help.ubuntu.com
+         * Management:     https://landscape.canonical.com
+         * Support:        https://ubuntu.com/pro
+
+         System information as of Чт 17 ноя 2024 11:58:29 UTC
+
+          System load:  0.0                Processes:              226
+          Usage of /:   18.6% of 38.04GB   Users logged in:        0
+          Memory usage: 5%                 IPv4 address for ens34: 192.168.1.244
+          Swap usage:   0%
+  </details>      
+
 - настроить доступ по ssh ключу <br>
     Воспользуемся под <b>Windows</b> терминалом <b>MobaXTerm</b> <br>
     Подключимся локальной сессией (псевдо Linux) и создадим ключи ssh    
