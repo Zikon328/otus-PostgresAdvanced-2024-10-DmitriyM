@@ -62,7 +62,7 @@
         Now try logging into the machine, with:   "ssh 'boss@192.168.1.244'"
         and check to make sure that only the key(s) you wanted were added.
 
-    При настройке новых подключений используем закрытый ключ (файл id_ed25519)
+    При настройке новых подключений используем закрытый ключ (файл id_ed25519) <br>
     в папке __\<AppDataDir\>\MobaXterm\home\\.ssh__
 - установить PostgreSQL 
   
