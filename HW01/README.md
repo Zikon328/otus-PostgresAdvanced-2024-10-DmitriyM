@@ -63,6 +63,7 @@
         and check to make sure that only the key(s) you wanted were added.
 
     При настройке новых подключений используем закрытый ключ (файл id_ed25519)
+    в папке __\<AppDataDir\>\MobaXterm\home\\.ssh__
 - установить PostgreSQL 
   
     Установим версию PostgreSQL_1C из репозитория PostgresPro
