@@ -68,12 +68,12 @@
   
     Установим версию PostgreSQL_1C из репозитория PostgresPro
       <details><summary><i>Подробнее о данной версии</i></summary>
-        Открытый репозиторий бесплатной версии PostgreSQL с расширениями для работы с 1C. <br>
-        Есть скрипт - настраивающий репозиторий для разных Linux <br>
-        Однотипная установка и настройка на разных Linux <br>
-        Возможность простого локального зеркала по версиям и Linux <br>
-        При установке работет скрипт аналог PGTune определяющий параметры сервера <br>
-        и изменяющий конфигурацию по умолчанию для PostgreSQL 
+        - Открытый репозиторий бесплатной версии PostgreSQL с расширениями для работы с 1C. <br>
+        - Есть скрипт - добавляющий репозиторий для разных Linux <br>
+        - Однотипная установка и настройка на разных Linux <br>
+        - Возможность простого локального зеркала по версиям и Linux <br>
+        - При установке работет скрипт (аналог PGTune) определяющий параметры сервера <br>
+          и изменяющий конфигурацию по умолчанию для PostgreSQL 
       </details>
    
    загружаем скрипт регистрации репозитория, регистрируем репозиторий, устанавливаем СУБД
@@ -89,7 +89,7 @@
     boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
     ● postgrespro-1c-16.service - Postgres Pro 1c 16 database server
          Loaded: loaded (/usr/lib/systemd/system/postgrespro-1c-16.service; enabled; preset: enabled)
-        Active: active (running) since Tue 2024-11-19 10:43:23 UTC; 1min 4s ago
+        Active: active (running) since Tue 2024-11-17 12:43:23 UTC; 1min 4s ago
         Process: 20776 ExecStartPre=/opt/pgpro/1c-16/bin/check-db-dir ${PGDATA} (code=exited, status=0/SUCCESS)
        Main PID: 20787 (postgres)
           Tasks: 7 (limit: 6968)
@@ -105,8 +105,8 @@
                  └─20808 "postgres: logical replication launcher "
 
     ноя 17 12:43:23 ubutest systemd[1]: Starting postgrespro-1c-16.service - Postgres Pro 1c 16 database server...
-    ноя 17 12:43:23 ubutest postgres[20787]: 2024-11-19 10:43:23.497 UTC [20787] СООБЩЕНИЕ:  передача вывода в протокол процессу сбора прото>
-    ноя 17 12:43:23 ubutest postgres[20787]: 2024-11-19 10:43:23.497 UTC [20787] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в катал>
+    ноя 17 12:43:23 ubutest postgres[20787]: 2024-11-17 12:43:23.497 UTC [20787] СООБЩЕНИЕ:  передача вывода в протокол процессу сбора прото>
+    ноя 17 12:43:23 ubutest postgres[20787]: 2024-11-17 12:43:23.497 UTC [20787] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в катал>
     ноя 17 12:43:23 ubutest systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
 ```
 
