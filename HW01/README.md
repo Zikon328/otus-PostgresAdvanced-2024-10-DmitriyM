@@ -113,115 +113,115 @@
 
 $\textsf{\color{orange}Подключимся второй сессией ssh}$
 ```
-    boss@ubutest:~$ sudo su - postgres
-    postgres@ubutest:~$ psql
-    psql (16.4)
-    Введите "help", чтобы получить справку.
+boss@ubutest:~$ sudo su - postgres
+postgres@ubutest:~$ psql
+psql (16.4)
+Введите "help", чтобы получить справку.
 
-    postgres=# \c
-    Вы подключены к базе данных "postgres" как пользователь "postgres".
-    postgres=#select version();
-                                             version
-    --------------------------------------------------------------------------------------------------
-     PostgreSQL 16.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0, 64-bit
-    (1 строка)
-    postgres=#
+postgres=# \c
+Вы подключены к базе данных "postgres" как пользователь "postgres".
+postgres=#select version();
+                                         version
+--------------------------------------------------------------------------------------------------
+ PostgreSQL 16.4 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0, 64-bit
+(1 строка)
+postgres=#
 ```
 
 $\textsf{\color{blue}Первая сессия}$
 ```
-    boss@ubutest:~$ sudo su - postgres
-    postgres@ubutest:~$ psql
-    psql (16.4)
-    Введите "help", чтобы получить справку.
+boss@ubutest:~$ sudo su - postgres
+postgres@ubutest:~$ psql
+psql (16.4)
+Введите "help", чтобы получить справку.
 
-    postgres=# \c
-    Вы подключены к базе данных "postgres" как пользователь "postgres".
-    postgres=#
+postgres=# \c
+Вы подключены к базе данных "postgres" как пользователь "postgres".
+postgres=#
 ```
 $\textsf{\color{blue}Создаём тестовую базу и выключаем auto commit}$
 ```
-    postgres=# create database otus1;
-    CREATE DATABASE
-    postgres=# \c otus1
-    Вы подключены к базе данных "otus1" как пользователь "postgres".
-    otus1=# \set autocommit off
-    otus1=# \echo :autocommit
-    off
-    otus1=#
+postgres=# create database otus1;
+CREATE DATABASE
+postgres=# \c otus1
+Вы подключены к базе данных "otus1" как пользователь "postgres".
+otus1=# \set autocommit off
+otus1=# \echo :autocommit
+off
+otus1=#
 ```
 $\textsf{\color{blue}В тестовой БД создаём таблицу и заполняем её данными}$
 ```
-    otus1=# begin;
-    BEGIN
-    otus1=*# create table persons(id serial, first_name text, second_name text);
-    insert into persons(first_name, second_name) values('ivan', 'ivanov');
-    insert into persons(first_name, second_name) values('petr', 'petrov');
-    CREATE TABLE
-    INSERT 0 1
-    INSERT 0 1
-    otus1=*# commit;
-    COMMIT
+otus1=# begin;
+BEGIN
+otus1=*# create table persons(id serial, first_name text, second_name text);
+insert into persons(first_name, second_name) values('ivan', 'ivanov');
+insert into persons(first_name, second_name) values('petr', 'petrov');
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+otus1=*# commit;
+COMMIT
 ```
 $\textsf{\color{blue}Посмотрим текущий уровень изоляции}$
 ```
-    otus1=# show transaction isolation level;
-     transaction_isolation
-    -----------------------
-     read committed
-    (1 строка)
+otus1=# show transaction isolation level;
+ transaction_isolation
+-----------------------
+ read committed
+(1 строка)
 ```
 Начать новую транзакцию в обеих сессиях
 ```
-    otus1=# begin;
-    BEGIN
-    otus1=*#
+otus1=# begin;
+BEGIN
+otus1=*#
 ```
         / * перед # указывает что это незавершённая транзакция
 $\textsf{\color{blue}Добавить запись ( первая сессия )}$
 ```
-    otus1=*# insert into persons(first_name, second_name) values('sergey', 'sergeev');
-    INSERT 0 1
-    otus1=*#
+otus1=*# insert into persons(first_name, second_name) values('sergey', 'sergeev');
+INSERT 0 1
+otus1=*#
 ```
 $\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
 ```
-    otus1=*# select * from persons;
-     id | first_name | second_name
-    ----+------------+-------------
-      1 | ivan       | ivanov
-      2 | petr       | petrov
-    (2 строки)
+otus1=*# select * from persons;
+ id | first_name | second_name
+----+------------+-------------
+  1 | ivan       | ivanov
+  2 | petr       | petrov
+(2 строки)
 
-    otus1=*#
+otus1=*#
 ```
 *Новых записей нет - транзакция в первой сессии не завершена (не видим изменённые данные в других транзакциях)* <br>
 
 $\textsf{\color{blue}Завершить первую транзакцию}$
 ```
-    otus1=*# commit;
-    COMMIT
-    otus1=#
+otus1=*# commit;
+COMMIT
+otus1=#
 ```
 $\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
 ```
-    otus1=*# select * from persons;
-     id | first_name | second_name
-    ----+------------+-------------
-      1 | ivan       | ivanov
-      2 | petr       | petrov
-      3 | sergey     | sergeev
-    (3 строки)
+otus1=*# select * from persons;
+ id | first_name | second_name
+----+------------+-------------
+  1 | ivan       | ivanov
+  2 | petr       | petrov
+  3 | sergey     | sergeev
+(3 строки)
 
-    otus1=*#
+otus1=*#
 ```
 *Новые записи есть - в первой сессии транзакция завершена (видим зафиксированные данные из других сессий)* <br>
 
 $\textsf{\color{orange}Завершить вторую транзакцию}$
 ```
-    otus1=*# commit;
-    COMMIT
-    otus1=#
+otus1=*# commit;
+COMMIT
+otus1=#
 ```
 
 Начать новые транзакции с изоляцией **repeatable read**
@@ -256,7 +256,7 @@ otus1=*# select * from persons;
 
 otus1=*#
 ```
-*Новых записей нет - транзакция в первой сессии не завершена (не видим изменённые данные в других транзакциях)* <br>
+*Новых записей нет - не видим изменённые данные в других транзакциях* <br>
 
 $\textsf{\color{blue}Завершить первую транзакцию}$
 ```
@@ -276,7 +276,7 @@ otus1=*# select * from persons;
 
 otus1=*#
 ```
-*Новых записей нет - в первой сессии транзакция завершена (не видим зафиксированные данные из других сессий)* <br>
+*Новых записей нет - не видим зафиксированные данные из других сессий* <br>
 
 $\textsf{\color{orange}Завершить вторую транзакцию}$
 ```
