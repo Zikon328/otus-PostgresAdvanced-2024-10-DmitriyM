@@ -63,7 +63,7 @@
         and check to make sure that only the key(s) you wanted were added.
 
     При настройке новых подключений используем закрытый ключ (файл id_ed25519) <br>
-        в папке __\<AppDataDir\>\MobaXterm\home\\.ssh__
+        в папке __\_AppDataDir\_\MobaXterm\home\\.ssh__
 - установить PostgreSQL 
   
     Установим версию PostgreSQL_1C из репозитория PostgresPro
@@ -177,36 +177,128 @@ $\textsf{\color{blue}Посмотрим текущий уровень изоля
     BEGIN
     otus1=*#
 ```
+        / * перед # указывает что это незавершённая транзакция
 $\textsf{\color{blue}Добавить запись ( первая сессия )}$
 ```
+    otus1=*# insert into persons(first_name, second_name) values('sergey', 'sergeev');
+    INSERT 0 1
+    otus1=*#
 ```
 $\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
 ```
+    otus1=*# select * from persons;
+     id | first_name | second_name
+    ----+------------+-------------
+      1 | ivan       | ivanov
+      2 | petr       | petrov
+    (2 строки)
+
+    otus1=*#
 ```
-*Новых записей нет так как транзакция не завершена* <br>
+*Новых записей нет - транзакция в первой сессии не завершена (не видим изменённые данные в других транзакциях)* <br>
 
 $\textsf{\color{blue}Завершить первую транзакцию}$
 ```
+    otus1=*# commit;
+    COMMIT
+    otus1=#
 ```
 $\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
 ```
+    otus1=*# select * from persons;
+     id | first_name | second_name
+    ----+------------+-------------
+      1 | ivan       | ivanov
+      2 | petr       | petrov
+      3 | sergey     | sergeev
+    (3 строки)
+
+    otus1=*#
 ```
-*Новых записей нет так как транзакция не завершена* <br>
+*Новые записи есть - в первой сессии транзакция завершена (видим зафиксированные данные из других сессий)* <br>
 
 $\textsf{\color{orange}Завершить вторую транзакцию}$
 ```
+    otus1=*# commit;
+    COMMIT
+    otus1=#
 ```
 
-Установить уровень изоляции **repeatable read**
+Начать новые транзакции с изоляцией **repeatable read**
 ```
+otus1=# begin;
+BEGIN
+otus1=*# set transaction isolation level repeatable read;
+SET
+otus1=*# show transaction isolation level;
+ transaction_isolation
+-----------------------
+ repeatable read
+(1 строка)
+
+otus1=*#
 ```
+$\textsf{\color{blue}Добавить запись ( первая сессия )}$
+```
+otus1=*# insert into persons(first_name, second_name) values('sveta', 'svetova');
+INSERT 0 1
+otus1=*#
+```
+$\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
+```
+otus1=*# select * from persons;
+ id | first_name | second_name
+----+------------+-------------
+  1 | ivan       | ivanov
+  2 | petr       | petrov
+  3 | sergey     | sergeev
+(3 строки)
+
+otus1=*#
+```
+*Новых записей нет - транзакция в первой сессии не завершена (не видим изменённые данные в других транзакциях)* <br>
+
+$\textsf{\color{blue}Завершить первую транзакцию}$
+```
+otus1=*# commit;
+COMMIT
+otus1=#
+```
+$\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
+```
+otus1=*# select * from persons;
+ id | first_name | second_name
+----+------------+-------------
+  1 | ivan       | ivanov
+  2 | petr       | petrov
+  3 | sergey     | sergeev
+(3 строки)
+
+otus1=*#
+```
+*Новых записей нет - в первой сессии транзакция завершена (не видим зафиксированные данные из других сессий)* <br>
+
+$\textsf{\color{orange}Завершить вторую транзакцию}$
+```
+otus1=*# commit;
+COMMIT
+otus1=#
+```
+$\textsf{\color{orange}Выбрать записи из таблицы ( вторая сессия )}$
+```
+otus1=# select * from persons;
+ id | first_name | second_name
+----+------------+-------------
+  1 | ivan       | ivanov
+  2 | petr       | petrov
+  3 | sergey     | sergeev
+  4 | sveta      | svetova
+(4 строки)
+
+otus1=#
+```
+*Записи все есть так как транзакция во второй сессии завершена (вышли из режима repeatable read)* <br>
+*-------------* <br>
+*В транзакции с типом repeatable read не видно изменённых и зафиксированных данных других транзакций*
 
 
-
-New string
-
-The background color is `#ffffff` for light mode and `#000000` for dark mode.
-
-
-${\color{blue}Create \tiny{\texttt{in a different 
-font style}} \color{darkgreen}my home}$ <br>
