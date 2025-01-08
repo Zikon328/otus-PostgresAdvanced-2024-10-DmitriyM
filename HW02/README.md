@@ -79,10 +79,10 @@ docker.io/library/postgres:14
 docker run -p 6432:5432 -v /var/lib/postgres:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres -d --name otus_postgres postgres:14
 ```
 
-- подключимся к СУБД в контейнере по порту 6432 с данной ВМ ( клиент postgresql стоит уже)
+- подключимся к СУБД в контейнере по порту 6432 с данной ВМ ( клиент postgresql стоит уже )
 
 ```bash
-sql -h localhost -p 6432 -U postgres
+psql -h localhost -p 6432 -U postgres
 Пароль пользователя postgres:
 psql (16.6, сервер 14.15 (Debian 14.15-1.pgdg120+1))
 Введите "help", чтобы получить справку.
@@ -131,7 +131,7 @@ RUN apk --no-cache add postgresql14-client
 ENTRYPOINT [ "psql" ]
 ```
 
-- соберём образ с именем pgclient14
+- соберём docker образ с именем pgclient14
 
 ```bash
 boss@ubutest:~/pgclient$ docker build -t pgclient14 .
@@ -149,7 +149,7 @@ boss@ubutest:~/pgclient$ docker build -t pgclient14 .
  => => naming to docker.io/library/pgclient14  
 ```
 
-- определим внутренний IP адрес сервера postgresql
+- определим IP адрес docker контейнера с postgresql
 
 ```bash
 boss@ubutest:~$ docker inspect otus_postgres | grep IPAddress
@@ -183,7 +183,7 @@ test=# select * from test1;
 (4 rows)
 ```
 
-- подключаемся с другой ВМ (astra 1.8)  к ВМ с контейнером postgresql
+- подключаемся с другой ВМ (astra 1.8)  к ВМ с docker контейнером postgresql
 
 ```
 boss@astra8:~$ psql postgresql://postgres:postgres@192.168.1.244:6432/test
@@ -200,7 +200,7 @@ test=# select * from test1;
 (4 строки)
 ```
 
-- удаляем контейнер и создаём его заново и уточняем IP адрес
+- удаляем docker контейнер postgres и создаём его заново и уточняем IP адрес
 
 ```bash
 boss@ubutest:~/pgclient$ docker rm -f otus_postgres
