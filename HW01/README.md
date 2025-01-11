@@ -5,7 +5,7 @@
   <details><summary><i> О системе</i></summary>
     <img src=../Images/hw-01-01.jpg alt='Параметры ВМ'>
   </details>
-- установить ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
+- установить  ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
   <details><summary><i> Аннотация терминала </i></summary>
   
         Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-49-generic x86_64)
