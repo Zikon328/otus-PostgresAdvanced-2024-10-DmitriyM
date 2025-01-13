@@ -7,7 +7,8 @@
   </details>
 - установлена  ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
 - установлен PostgreSQL версии PostgresPro-1c-16 
-  <details><summary><i> состояние работы службы PostgreSQL </i></summary>
+
+```
     boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
     ● postgrespro-1c-16.service - Postgres Pro 1c 16 database server
         Loaded: loaded (/usr/lib/systemd/system/postgrespro-1c-16.service; disabled; preset: enabled)
@@ -30,7 +31,7 @@
     янв 13 17:07:49 ubutest postgres[123567]: 2025-01-13 17:07:49.365 UTC [123567] СООБЩЕНИЕ:  передача вывода в протокол процессу сбора протоколов
     янв 13 17:07:49 ubutest postgres[123567]: 2025-01-13 17:07:49.365 UTC [123567] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в каталог "log".
     янв 13 17:07:49 ubutest systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
-  </details>      
+```
 
 - добавим таблицу colors в текущую базу данных postgres
 
@@ -132,9 +133,9 @@ boss@ubutest:~$ ls -la /  | grep pgdata
 drwxr-x---   2 postgres postgres          6 янв 13 17:25 pgdata
 ```
 
-// -- Комментарии --
-// ubuntu-2404  Требует daemon-reload при изменеии /etc/fstab
-// postgrespro-1c-16 - папка с данными должна быть с доступом 750 или 700
+// -- Комментарии --<br>
+// ubuntu-2404  Требует daemon-reload при изменеии /etc/fstab<br>
+// postgrespro-1c-16 - папка с данными должна быть с доступом 750 или 700<br>
 
 - перенесём данные в новую папку
 
@@ -203,3 +204,53 @@ boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 
 // сервер запустился и видно что с параметром каталога БД  /pgdata
 
+- посмотрим данные что вводили ранее
+
+```
+boss@ubutest:~$ sudo su - postgres
+postgres@ubutest:~$ psql
+psql (16.6)
+Введите "help", чтобы получить справку.
+
+postgres=# select * from colors;
+ id | name
+----+-------
+  1 | red
+  2 | green
+  3 | blue
+  4 | gray
+(4 строки)
+```
+
+// Данные присутствуют - перенос произведён<br> 
+// --<br>
+// Также есть вариант настройки через символьную ссылку к папке данных<br>
+// тогда в настройках не надо менять путь PGDATA<br>
+// --<br>
+// Через символьную ссылку перенаправляют каталог wal на другой диск<br>
+// и это также делает ключ -X команды initdb<br>
+// <br>
+
+
+- ещё некоторые комментарии
+
+```
+Для разных версий Linux - версии PostgreSQL входящие в комплект стандартного репозитория
+Очень различные настройки
+
+- Ubuntu и Debian 
+    своеобразная библиотека postgresql-common
+    настройки в папке /etc/postgresql - независимы от папки данных
+- SUSE Linux 
+    дополнительные скрипты
+    параметры настройки в файле /etc/
+- CentOS
+    параметры
+- Astra Linux 1.8
+    параметры        
+```
+
+- попробуем перенести диск ВМ на другую ВМ
+
+//  Есть ещё одна ВМ  - Astra Linux 1.8  и  также установлен PostgresPro-1C-16<br>
+//  Для переноса в гипервизоре 
