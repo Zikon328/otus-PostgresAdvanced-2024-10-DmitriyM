@@ -238,19 +238,159 @@ postgres=# select * from colors;
 Для разных версий Linux - версии PostgreSQL входящие в комплект стандартного репозитория
 Очень различные настройки
 
-- Ubuntu и Debian 
-    своеобразная библиотека postgresql-common
-    настройки в папке /etc/postgresql - независимы от папки данных
-- SUSE Linux 
-    дополнительные скрипты
-    параметры настройки в файле /etc/
-- CentOS
+- Ubuntu и Debian ( free )
+    актуальная версия СУБД - очень быстро доступна
+    своеобразная библиотека postgresql-common для управления "инстансами"
+    ( минус! - данная библиотека ТОЛЬКО на Ubuntu и Debian совместимых Linux )
+    настройки в папке /etc/postgresql/15/main - независимы от папки данных
+    ( здесь и настраивается параметр data_directory в файле postgresql.conf )
+- SUSE Linux ( 15sp4 - not free )
+    актуальная версия СУБД появляется достаточно быстро в репозитории
+    оригинальное размещение программы и несколько версий
+    ( /usr/lib/postgresqlNN, /usr/share/postgresqlNN )
+    основной скрипт запуска /usr/share/postgresql/postgresql-script
+    параметры настройки в файле /etc/sysconfig/postgresql
+    ( в этом файле можно установить путь к данным )
+- CentOS ( pseudo free )
     параметры
-- Astra Linux 1.8
-    параметры        
+- Astra Linux 1.7 ( not free )
+    официально только PostgreSQL 11 - в родном репозитории
+    можно подключить репозиторий Debian 10    
+    аналогично Debian и Ubuntu
+- Astra Linux 1.8 ( not free )
+    PostgreSQL 15 - в родном репозитории
+    можно подключить репозиторий Debian 12 (уточнить)    
+    аналогично Debian и Ubuntu
+```
+
+Репозиторий - PostgresPro - свободная версия для 1С<br> 
+( есть STD для тестирования )
+
+```
+- Поддерживается - AstraLinux; SUSE Linux; AlterOS; AltLinux; 
+                   Debian; RedOS; RedHat; ROSA; Ubuntu; + Производные
+                   GosLinux; Rocky; AlmaLinux; OSnova; OpenSUSE ...
+- Единый скрипт для всех Linux для регистрации репозитория
+- Программа размещается в папке  /opt/pgpro/1c-NN (NN версия - можно ставить разные)
+- При установке сервер запускается в папке с данными /var/lib/pgpro/1c-NN/data
+- Предварительно определяются скриптом параметры сервера (процессор/память) и 
+  добавляются настройки в файле postgresql.conf
+- Также если уже есть запущен сервер на портах 5432, 5433 ... - выберет свободный порт
+- Настройки каталога данных в файле /etc/default/postgrespro-1c-NN  
+- Можно организовать локальный репозиторий нужных версий и для определённых Linux
+  ( при этом скрипт регистрации репозитория - минимальные изменения )
+- МИНУСЫ - началные параметры заточены для 1С 
+  - Шифрование md5 - переключить в scram256
+  - дополнительные расширения - отключить
+- При новой инициализации (initdb) будет как в стандартном PostgreSQL
 ```
 
 - попробуем перенести диск ВМ на другую ВМ
 
 //  Есть ещё одна ВМ  - Astra Linux 1.8  и  также установлен PostgresPro-1C-16<br>
 //  Для переноса в гипервизоре 
+
+- Отключим ВМ с Ubuntu и временно подключим диск с данными к Astra Linux
+
+```
+boss@astra8:~$ lsblk
+NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda            8:0    0   40G  0 disk
+├─sda1         8:1    0  600M  0 part /boot/efi
+└─sda2         8:2    0 39,4G  0 part /
+sdb            8:16   0   80G  0 disk
+└─gu02-u02   252:0    0   80G  0 lvm  /u02
+sdc            8:32   0   25G  0 disk
+└─vg1-pgdata 252:2    0   25G  0 lvm
+sdd            8:48   0   80G  0 disk
+└─gu01-u01   252:1    0   80G  0 lvm  /u01
+sr0           11:0    1  6,5G  0 rom
+```
+
+// диск sdc автоматически просканировался на LVM
+
+- смонтируем временно диск в папку /pgdata
+
+```
+boss@astra8:~$ sudo mkdir /pgdata
+boss@astra8:~$ sudo mount /dev/vg1/pgdata /pgdata
+boss@astra8:~$ lsblk
+NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda            8:0    0   40G  0 disk
+├─sda1         8:1    0  600M  0 part /boot/efi
+└─sda2         8:2    0 39,4G  0 part /
+sdb            8:16   0   80G  0 disk
+└─gu02-u02   252:0    0   80G  0 lvm  /u02
+sdc            8:32   0   25G  0 disk
+└─vg1-pgdata 252:2    0   25G  0 lvm  /pgdata
+sdd            8:48   0   80G  0 disk
+└─gu01-u01   252:1    0   80G  0 lvm  /u01
+sr0           11:0    1  6,5G  0 rom
+
+boss@astra8:~$ sudo chown -R postgres: /pgdata
+boss@astra8:~$ sudo chmod -R 750 /pgdata
+
+boss@astra8:~$ ls -la / | grep pgdata
+drwxr-x---  21 postgres postgres       4096 янв 14 15:36 pgdata
+```
+
+- запустим сервер СУБД с данной папкой ( исправили PGDATA в /etc/default/postgrespro-1c-16 )  
+
+```
+boss@astra8:~$ sudo systemctl start postgrespro-1c-16.service
+boss@astra8:~$ sudo systemctl status postgrespro-1c-16.service
+● postgrespro-1c-16.service - Postgres Pro 1c 16 database server
+     Loaded: loaded (/lib/systemd/system/postgrespro-1c-16.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2025-01-14 16:24:53 +05; 5s ago
+    Process: 19462 ExecStartPre=/opt/pgpro/1c-16/bin/check-db-dir ${PGDATA} (code=exited, status=0/SUCCESS)
+   Main PID: 19464 (postgres)
+      Tasks: 7 (limit: 2307)
+     Memory: 60.1M
+        CPU: 64ms
+     CGroup: /system.slice/postgrespro-1c-16.service
+             ├─19464 /opt/pgpro/1c-16/bin/postgres -D /pgdata
+             ├─19465 "postgres: logger "
+             ├─19466 "postgres: checkpointer "
+             ├─19467 "postgres: background writer "
+             ├─19469 "postgres: walwriter "
+             ├─19470 "postgres: autovacuum launcher "
+             └─19471 "postgres: logical replication launcher "
+
+янв 14 16:24:53 astra8 systemd[1]: Starting postgrespro-1c-16.service - Postgres Pro 1c 16 database server...
+янв 14 16:24:53 astra8 postgres[19464]: 2025-01-14 11:24:53.092 UTC [19464] СООБЩЕНИЕ:  передача вывода в протокол процессу сбора протоколов
+янв 14 16:24:53 astra8 postgres[19464]: 2025-01-14 11:24:53.092 UTC [19464] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в каталог "log".
+янв 14 16:24:53 astra8 systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
+```
+
+- проверим данные в базе
+
+```
+boss@astra8:~$ sudo su - postgres
+postgres@astra8:~$
+postgres@astra8:~$
+postgres@astra8:~$ psql
+ПРЕДУПРЕЖДЕНИЕ:  несовпадение версии для правила сортировки в базе данных "postgres"
+ПОДРОБНОСТИ:  База данных была создана с версией правила сортировки 2.39, но операционная система предоставляет версию 2.36.
+ПОДСКАЗКА:  Перестройте все объекты в этой базе, задействующие основное правило сортировки, и выполните ALTER DATABASE postgres REFRESH COLLATION VERSION, либо соберите PostgreSQL с правильной версией библиотеки.
+psql (17.2, сервер 16.6)
+Введите "help", чтобы получить справку.
+
+postgres=# select * from colors;
+ id | name
+----+-------
+  1 | red
+  2 | green
+  3 | blue
+  4 | gray
+(4 строки)
+```
+
+// База работает но, есть предупреждение по библиотеке libc разных версий Linux<br>
+// посмотреть версию можно так
+
+```
+postgres@astra8:~$ ldd --version
+ldd (Debian GLIBC 2.36-9+deb12u7+ci202405171200+astra5+b1) 2.36
+Copyright (C) 2022 Free Software Foundation, Inc.
+```
+
