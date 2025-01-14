@@ -52,7 +52,7 @@ postgres=# select * from colors;
 
 - останавливаем PostgreSQL
 
-```bash
+```
 boss@ubutest:~$ sudo systemctl stop postgrespro-1c-16.service
 boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 ○ postgrespro-1c-16.service - Postgres Pro 1c 16 database server
@@ -72,7 +72,7 @@ boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 
 - диск sdb есть неразмеченный
 
-```bash
+```
 boss@ubutest:~$ lsblk
 NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
 sda      8:0    0   40G  0 disk
@@ -84,7 +84,7 @@ sr0     11:0    1  2,6G  0 rom
 
 - разметим диск с использованием lvm и отформатируем в xfs
 
-```bash
+```
 boss@ubutest:~$ sudo pvcreate /dev/sdb
   Physical volume "/dev/sdb" successfully created.
 boss@ubutest:~$ sudo vgcreate vg1 /dev/sdb
@@ -114,7 +114,7 @@ Discarding blocks...Done.
 
 - проверяем настройку fstab 
 
-```bash
+```
 boss@ubutest:~$ sudo mkdir /pgdata
 boss@ubutest:~$ sudo systemctl daemon-reload
 boss@ubutest:~$ sudo mount -a
@@ -139,14 +139,14 @@ drwxr-x---   2 postgres postgres          6 янв 13 17:25 pgdata
 
 - перенесём данные в новую папку
 
-```bash
+```
 boss@ubutest:~$ sudo su - postgres
 postgres@ubutest:~$ mv /var/lib/pgpro/1c-16/data/* /pgdata/
 ```
 
 - запустим сервер PostgreSQL
 
-```bash
+```
 sudo systemctl start postgrespro-1c-16.service
 Job for postgrespro-1c-16.service failed because the control process exited with error code.
 See "systemctl status postgrespro-1c-16.service" and "journalctl -xeu postgrespro-1c-16.service" for details.
@@ -176,7 +176,7 @@ PGDATA=/pgdata
 
 - запускаем сервер
 
-```bash
+```
 boss@ubutest:~$ sudo systemctl start postgrespro-1c-16.service
 boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 ● postgrespro-1c-16.service - Postgres Pro 1c 16 database server
@@ -265,7 +265,7 @@ postgres=# select * from colors;
     аналогично Debian и Ubuntu
 - Astra Linux 1.8 ( not free )
     PostgreSQL 15 - в родном репозитории
-    можно подключить репозиторий Debian 12 (уточнить)    
+    можно подключить репозиторий Debian 12   
     аналогично Debian и Ubuntu
 ```
 
@@ -391,10 +391,10 @@ postgres=# select * from colors;
 (4 строки)
 ```
 
-// База работает но, есть предупреждение по библиотеке libc разных версий Linux<br>
-// посмотреть версию можно так
+// База работает но, есть предупреждение по библиотеке libc разных версий Linux ???<br>
+// посмотреть версию можно так ( При этом локаль Linux и параметры LC СУБД идентичны )
 
-```bash
+```
 boss@astra8:~$ ldd --version
 ldd (Debian GLIBC 2.36-9+deb12u7+ci202405171200+astra5+b1) 2.36
 Copyright (C) 2022 Free Software Foundation, Inc.
@@ -404,10 +404,12 @@ ldd (Ubuntu GLIBC 2.39-0ubuntu8.3) 2.39
 Copyright (C) 2024 Free Software Foundation, Inc.
 ```
 
+// -----------------------------------------<br>
+
 // При возвращении диска обратно в систему Ubuntu<br>
 // восстановить надо права доступа
 
-```bash
+```
 boss@ubutest:~$ sudo chown -R postgres: /pgdata
 boss@ubutest:~$ sudo chmod -R 750 /pgdata
 ```
