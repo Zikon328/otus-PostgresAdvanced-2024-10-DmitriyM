@@ -251,8 +251,14 @@ postgres=# select * from colors;
     основной скрипт запуска /usr/share/postgresql/postgresql-script
     параметры настройки в файле /etc/sysconfig/postgresql
     ( в этом файле можно установить путь к данным )
-- CentOS ( pseudo free )
-    параметры
+- CentOS Stream 9 ( pseudo free )
+    в репозитории PostgreSQL 13
+    попытка установить из глобального yum.postgresql.org  16 версию
+    для CentOS 9 нет официального на yum, но взял от RedHat 9
+    После установки СУБД в /usr/pgsql-16
+    требуется инициализация  'sudo /usr/pgsql-16/bin/postgresql-16-setup initdb'
+    каталог данных для 16 версии  /var/lib/pgsql/16/data 
+    прописан в файле сервиса  /usr/lib/systemd/system/postgresql-16.service
 - Astra Linux 1.7 ( not free )
     официально только PostgreSQL 11 - в родном репозитории
     можно подключить репозиторий Debian 10    
@@ -309,7 +315,7 @@ sdd            8:48   0   80G  0 disk
 sr0           11:0    1  6,5G  0 rom
 ```
 
-// диск sdc автоматически просканировался на LVM
+// диск sdc 25G автоматически просканировался на LVM
 
 - смонтируем временно диск в папку /pgdata
 
@@ -368,8 +374,6 @@ boss@astra8:~$ sudo systemctl status postgrespro-1c-16.service
 
 ```
 boss@astra8:~$ sudo su - postgres
-postgres@astra8:~$
-postgres@astra8:~$
 postgres@astra8:~$ psql
 ПРЕДУПРЕЖДЕНИЕ:  несовпадение версии для правила сортировки в базе данных "postgres"
 ПОДРОБНОСТИ:  База данных была создана с версией правила сортировки 2.39, но операционная система предоставляет версию 2.36.
@@ -390,9 +394,20 @@ postgres=# select * from colors;
 // База работает но, есть предупреждение по библиотеке libc разных версий Linux<br>
 // посмотреть версию можно так
 
-```
-postgres@astra8:~$ ldd --version
+```bash
+boss@astra8:~$ ldd --version
 ldd (Debian GLIBC 2.36-9+deb12u7+ci202405171200+astra5+b1) 2.36
 Copyright (C) 2022 Free Software Foundation, Inc.
+
+boss@ubutest:~$ ldd --version
+ldd (Ubuntu GLIBC 2.39-0ubuntu8.3) 2.39
+Copyright (C) 2024 Free Software Foundation, Inc.
 ```
 
+// При возвращении диска обратно в систему Ubuntu<br>
+// восстановить надо права доступа
+
+```bash
+boss@ubutest:~$ sudo chown -R postgres: /pgdata
+boss@ubutest:~$ sudo chmod -R 750 /pgdata
+```
