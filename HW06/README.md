@@ -44,5 +44,97 @@ sudo apt install pg-probackup-std-17
 sudo ln -s /opt/pgpro/std-17/bin/pg_probackup /usr/bin/pg_probackup
 ```
 
+- Настройка pg_probackup
 
+```
+-- создаём каталог для бэкапов
+boss@ubutest:~$ sudo mkdir /backups/probackup
+boss@ubutest:~$ sudo chown postgres: /backups/probackup
+-- инициализируем каталог
+sudo -i -u postgres
+postgres@ubutest:~$ pg_probackup init -B /backups/probackup
+INFO: Backup catalog '/backups/probackup' successfully initialized
+-- установим переменную на данный каталог и можно использовать без ключа -B
+postgres@ubutest:~$ export BACKUP_PATH=/backups/probackup
+-- добавляем инстанс ( учитываем порт 5433 )
+postgres@ubutest:~$ pg_probackup add-instance -D /pgdata/air -p 5433 --instance=air
+INFO: Instance 'air' successfully initialized
+-- посмотрим какие параметры по умолчанию назначены
+postgres@ubutest:~$ pg_probackup show-config --instance=air
+# Backup instance information
+pgdata = /pgdata/air
+system-identifier = 7460572854766238660
+xlog-seg-size = 16777216
+# Connection parameters
+pgdatabase = postgres
+pgport = 5433
+# Archive parameters
+archive-timeout = 5min
+# Logging parameters
+log-level-console = INFO
+log-level-file = OFF
+log-format-console = PLAIN
+log-format-file = PLAIN
+log-filename = pg_probackup.log
+log-rotation-size = 0TB
+log-rotation-age = 0d
+# Retention parameters
+retention-redundancy = 0
+retention-window = 0
+wal-depth = 0
+# Compression parameters
+compress-algorithm = none
+compress-level = 1
+# Remote access parameters
+remote-proto = ssh
+# Backup instance information
+write-rate-limit = 0GBps
+```
+
+- сдедаем полный архив с разной упаковкой и потоками
+
+```
+postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream
+INFO: Backup start, pg_probackup version: 2.8.5, instance: air, backup ID: SQ73B8, backup mode: FULL, wal mode: STREAM, remote: false, compress-algorithm: none, compress-level: 1
+INFO: This PostgreSQL instance was initialized with data block checksums. Data block corruption will be detected
+WARNING: Current PostgreSQL role is superuser. It is not recommended to run pg_probackup under superuser.
+INFO: Database backup start
+INFO: wait for pg_backup_start()
+INFO: PGDATA size: 8014MB
+INFO: Current Start LSN: 2/90000028, TLI: 1
+INFO: Start transferring data files
+INFO: Data files are transferred, time elapsed: 1m:25s
+INFO: wait for pg_stop_backup()
+INFO: pg_stop_backup() successfully executed
+INFO: stop_stream_lsn 2/91000000 currentpos 2/91000000
+INFO: backup->stop_lsn 2/900001C8
+INFO: Getting the Recovery Time from WAL
+INFO: Syncing backup files to disk
+INFO: Backup files are synced, time elapsed: 2s
+INFO: Validating backup SQ73B8
+INFO: Backup SQ73B8 data files are valid
+INFO: Backup SQ73B8 resident size: 8038MB
+INFO: Backup SQ73B8 completed
+
+postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=lz4 --compress-level=9
+postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=lz4 --compress-level=9 -j 3
+postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zstd --compress-level=3 -j 3
+postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zlib --compress-level=3 -j 3
+postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zlib --compress-level=6 -j 3
+```
+
+- статистика по алгоритмам и сжатию ( быстрее и лучше сжимает - zstd , но вместе с lz4 его нет в бесплатной версии )
+
+```
+postgres@ubutest:~$ pg_probackup show --instance=air
+===================================================================================================================================================
+ Instance  Version  ID      Recovery Time                  Mode  WAL Mode  TLI    Time    Data   WAL  Zalg  Zratio  Start LSN   Stop LSN    Status
+===================================================================================================================================================
+ air       17       SQ73YG  2025-01-16 19:12:29.943367+00  FULL  STREAM    1/0  1m:28s  2311MB  16MB  zlib    3.47  2/9A000028  2/9A0001C8  OK      
+ air       17       SQ73W0  2025-01-16 19:10:29.710545+00  FULL  STREAM    1/0     56s  2370MB  16MB  zlib    3.38  2/98000028  2/980001C8  OK
+ air       17       SQ73UJ  2025-01-16 19:09:16.479732+00  FULL  STREAM    1/0     36s  2286MB  16MB  zstd    3.51  2/96000028  2/960001C8  OK
+ air       17       SQ73RO  2025-01-16 19:07:56.480770+00  FULL  STREAM    1/0     59s  3476MB  16MB   lz4    2.31  2/94000028  2/940001C8  OK
+ air       17       SQ73N7  2025-01-16 19:06:38.375030+00  FULL  STREAM    1/0  2m:20s  3476MB  16MB   lz4    2.31  2/92000028  2/920001C8  OK
+ air       17       SQ73B8  2025-01-16 18:58:33.749503+00  FULL  STREAM    1/0  1m:27s  8022MB  16MB  none    1.00  2/90000028  2/900001C8  OK
+```
 
