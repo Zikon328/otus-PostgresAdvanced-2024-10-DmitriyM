@@ -150,17 +150,29 @@ postgres@ubutest:~$ pg_probackup show --instance=air
 - настроим доступ к папке /backups с других ВМ по сети как NFS
 
 ```
+sudo apt update
+sudo apt install nfs-kernel-server
+sudo -- sh -c "echo '/backups  192.168.1.0/24(rw,no_root_squash,no_subtree_check)' >> /etc/exports"
+sudo exportfs -a
 ```
 
 - есть вторая ВМ с установленным Astra Linux 1.8  и также PostgresPro-std-17<br>
   настроим доступ к диску /backups первой ВМ по сети
 
 ```
+sudo apt update
+sudo apt install nfs-common
+-- временно подключим NFS ресурс
+sudo mkdir /backups
+sudo mount -t nfs 192.168.1.244:/backups /backups 
 ```
 
 - настраивать pg_probackup и базу на второй ВМ - не надо ( работаем от пользователя postgres )<br>
   проверим что видим бэкапы по сети
-  
+
+```
+```
+
 - восстановим "кластер" из бэкапа на второй ВМ 
 
 ```
