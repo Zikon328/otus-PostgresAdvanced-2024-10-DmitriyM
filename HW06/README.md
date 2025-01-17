@@ -91,7 +91,9 @@ remote-proto = ssh
 write-rate-limit = 0GBps
 ```
 
-- сдедаем полный архив с разной упаковкой и потоками
+- сдедаем полный архив с разной упаковкой и потоками<br>
+  // здесь на тестах работаем от пользователя postgres - что нежелательно - WARNING предупреждение<br>
+  // в реальной работе надо создавать пользователя отдельного и по настройке следовать инструкции PostgresPro 
 
 ```
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream
@@ -117,10 +119,15 @@ INFO: Backup SQ73B8 resident size: 8038MB
 INFO: Backup SQ73B8 completed
 
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=lz4 --compress-level=9
+...
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=lz4 --compress-level=9 -j 3
+...
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zstd --compress-level=3 -j 3
+...
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zlib --compress-level=3 -j 3
+...
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zlib --compress-level=6 -j 3
+...
 ```
 
 - статистика по алгоритмам и сжатию ( быстрее и лучше сжимает - zstd , но вместе с lz4 его нет в бесплатной версии )
@@ -137,4 +144,38 @@ postgres@ubutest:~$ pg_probackup show --instance=air
  air       17       SQ73N7  2025-01-16 19:06:38.375030+00  FULL  STREAM    1/0  2m:20s  3476MB  16MB   lz4    2.31  2/92000028  2/920001C8  OK
  air       17       SQ73B8  2025-01-16 18:58:33.749503+00  FULL  STREAM    1/0  1m:27s  8022MB  16MB  none    1.00  2/90000028  2/900001C8  OK
 ```
+
+### Восстановление "кластера" на другой ВМ
+
+- настроим доступ к папке /backups с других ВМ по сети как NFS
+
+```
+```
+
+- есть вторая ВМ с установленным Astra Linux 1.8  и также PostgresPro-std-17<br>
+  настроим доступ к диску /backups первой ВМ по сети
+
+```
+```
+
+- настраивать pg_probackup и базу на второй ВМ - не надо ( работаем от пользователя postgres )<br>
+  проверим что видим бэкапы по сети
+  
+- восстановим "кластер" из бэкапа на второй ВМ 
+
+```
+```
+
+- прорверим наличие базы
+
+```
+```
+
+// база в наличии - востановление успешно
+
+
+### Работа с репликой
+
+
+
 
