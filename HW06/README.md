@@ -300,7 +300,7 @@ CREATE ROLE
 postgres=# create database sbtest owner sbtest;
 CREATE DATABASE
 -- инициализируем sysbench
-sysbench \
+postgres@astra8:~$ sysbench \
 --db-driver=pgsql \
 --oltp-table-size=100000 \
 --oltp-tables-count=24 \
@@ -361,7 +361,24 @@ Threads fairness:
     execution time (avg/stddev):   35.2647/0.00
 ```
 
+- нагрузка чтения-записи
 
+```
+postgres@astra8:~$ sysbench \
+--db-driver=pgsql \
+--report-interval=4 \
+--oltp-table-size=100000 \
+--oltp-tables-count=24 \
+--threads=64 \
+--time=120 \
+--pgsql-host=192.168.1.244 \
+--pgsql-port=5433 \
+--pgsql-user=sbtest \
+--pgsql-password=sbtest \
+--pgsql-db=sbtest \
+/usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
+run
+```
 
 ### Работа с репликой
 
