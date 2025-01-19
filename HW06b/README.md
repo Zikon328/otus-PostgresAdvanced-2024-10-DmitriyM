@@ -341,4 +341,5 @@ postgres@astra8:~$ wal-g wal-show --detailed-json | jq .
     "status": "OK"
   }
 ]
+
 ``` 
