@@ -730,7 +730,5 @@ postgres@astra8:~$ pg_probackup show --instance=air
 
 ### См. также
 
-```
-HW06a - Полная настройка pg_probackup-16 (free) 
-HW06b - Использование WAL-G
-```
+[HW06a - Полная настройка pg_probackup-16 (free)](https://github.com/Zikon328/otus-PostgresAdvanced-2024-10-DmitriyM/tree/main/HW06a)
+[HW06b - Использование WAL-G](../HW06b)
