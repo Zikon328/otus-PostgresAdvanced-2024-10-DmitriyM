@@ -204,7 +204,7 @@ BACKUP INSTANCE 'air'
  Instance  Version  ID      Recovery Time                  Mode  WAL Mode  TLI    Time    Data   WAL  Zalg  Zratio  Start LSN   Stop LSN    Status
 ===================================================================================================================================================
  air       17       SQ73YG  2025-01-17 00:12:29.943367+05  FULL  STREAM    1/0  1m:28s  2311MB  16MB  zlib    3.47  2/9A000028  2/9A0001C8  OK
- ``
+```
 
 - восстановим "кластер" из бэкапа на второй ВМ ( /var/lib/pgpro/std-17/data )
 
