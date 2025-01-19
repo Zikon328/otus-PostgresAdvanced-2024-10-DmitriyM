@@ -30,8 +30,8 @@ boss@astra8:~/go/src/github.com/wal-g/wal-g$ make pg_build
 -- собрали для postgresql - и проверим версию
 boss@astra8:~/go/src/github.com/wal-g/wal-g$ main/pg/wal-g --version
 wal-g version   e42ffe43        2024.12.04_09:31:40     PostgreSQL
--- скопируем в основной bin каталог
-boss@astra8:~/go/src/github.com/wal-g/wal-g$ sudo cp main/pg/wal-g /usr/bin/wal-g
+-- скопируем в локальный bin каталог
+boss@astra8:~/go/src/github.com/wal-g/wal-g$ sudo cp main/pg/wal-g /usr/local/bin/wal-g
 ```
 
 ### Настройка программы WAL-G
@@ -183,3 +183,162 @@ INFO: 2024/12/04 15:13:51.941365 List backups from storages: [default]
   }
 ]
 ```
+
+- Настраиваем архивацию WAL с помощью WAL-G
+
+```
+boss@astra8:~$ sudo mkdir /var/log/postgresql
+boss@astra8:~$ sudo chown postgres: /var/log/postgresql
+
+-- добавим в файл postgresql.conf следующие строки
+wal_level=replica
+archive_mode=on
+archive_command='/usr/local/bin/wal-g wal-push \"%p\" >> /var/log/postgresql/archive_command.log 2>&1' 
+archive_timeout=60
+restore_command='/usr/local/bin/wal-g wal-fetch \"%f\" \"%p\" >> /var/log/postgresql/restore_command.log 2>&1'
+
+-- так как изменили archive_mode - перезагружаем службу 
+```
+
+- Посмотреть состояние WAL архива
+
+```
+postgres@astra8:~$ wal-g wal-show
++-----+------------+-----------------+--------------------------+--------------------------+---------------+----------------+--------+---------------+
+| TLI | PARENT TLI | SWITCHPOINT LSN | START SEGMENT            | END SEGMENT              | SEGMENT RANGE | SEGMENTS COUNT | STATUS | BACKUPS COUNT |
++-----+------------+-----------------+--------------------------+--------------------------+---------------+----------------+--------+---------------+
+|   1 |          0 |             0/0 | 00000001000000020000009D | 0000000100000002000000AB |            15 |             15 | OK     |             0 |
++-----+------------+-----------------+--------------------------+--------------------------+---------------+----------------+--------+---------------+
+
+postgres@astra8:~$ wal-g wal-show --detailed-json | jq .
+[
+  {
+    "id": 1,
+    "parent_id": 0,
+    "switch_point_lsn": 0,
+    "start_segment": "00000001000000020000009D",
+    "end_segment": "0000000100000002000000AB",
+    "segments_count": 15,
+    "missing_segments": [],
+    "segment_range_size": 15,
+    "status": "OK"
+  }
+]
+
+```
+
+- Сделаем следующий бэкап и посмотрим состояние
+
+```
+postgres@astra8:~$ wal-g backup-push /var/lib/pgpro/std-17/data/
+INFO: 2025/01/19 20:57:43.705164 Backup will be pushed to storage: default
+INFO: 2025/01/19 20:57:43.717780 LATEST backup is: 'base_00000001000000020000009C'
+INFO: 2025/01/19 20:57:43.718119 Delta backup from base_00000001000000020000009C with LSN 2/9C000060.
+INFO: 2025/01/19 20:57:43.741441 Calling pg_start_backup()
+INFO: 2025/01/19 20:57:43.864979 Initializing the PG alive checker (interval=1m0s)...
+INFO: 2025/01/19 20:57:43.865357 Delta backup enabled
+INFO: 2025/01/19 20:57:43.865428 Starting a new tar bundle
+INFO: 2025/01/19 20:57:43.865494 Walking ...
+INFO: 2025/01/19 20:57:43.866335 Starting part 1 ...
+INFO: 2025/01/19 20:57:43.867193 Starting part 2 ...
+INFO: 2025/01/19 20:57:43.867545 Starting part 3 ...
+INFO: 2025/01/19 20:57:43.883128 Starting part 4 ...
+INFO: 2025/01/19 20:57:43.945377 Packing ...
+INFO: 2025/01/19 20:57:43.946436 Finished writing part 4.
+INFO: 2025/01/19 20:57:43.946835 Finished writing part 2.
+INFO: 2025/01/19 20:57:43.947148 Finished writing part 3.
+INFO: 2025/01/19 20:57:43.950404 Finished writing part 1.
+INFO: 2025/01/19 20:57:43.950444 Starting part 5 ...
+INFO: 2025/01/19 20:57:43.950563 /global/pg_control
+INFO: 2025/01/19 20:57:43.950786 Finished writing part 5.
+INFO: 2025/01/19 20:57:43.950792 Calling pg_stop_backup()
+INFO: 2025/01/19 20:57:43.962980 Starting part 6 ...
+INFO: 2025/01/19 20:57:43.963588 backup_label
+INFO: 2025/01/19 20:57:43.963841 tablespace_map
+INFO: 2025/01/19 20:57:43.964529 Finished writing part 6.
+INFO: 2025/01/19 20:57:43.965429 Querying pg_database
+INFO: 2025/01/19 20:57:44.028552 Wrote backup with name base_00000001000000020000009F_D_00000001000000020000009C to storage default
+
+postgres@astra8:~$ wal-g backup-list --detail --json | jq .
+INFO: 2025/01/19 20:58:16.648264 List backups from storages: [default]
+[
+  {
+    "backup_name": "base_00000001000000020000009C",
+    "time": "2025-01-19T20:09:10.337690234+05:00",
+    "wal_file_name": "00000001000000020000009C",
+    "storage_name": "default",
+    "start_time": "2025-01-19T15:08:20.485748Z",
+    "finish_time": "2025-01-19T15:09:10.336261Z",
+    "date_fmt": "%Y-%m-%dT%H:%M:%S.%fZ",
+    "hostname": "astra8",
+    "data_dir": "/var/lib/pgpro/std-17/data",
+    "pg_version": 170002,
+    "start_lsn": 11207180384,
+    "finish_lsn": 11207180696,
+    "is_permanent": false,
+    "system_identifier": 7460572854766239000,
+    "uncompressed_size": 8403090737,
+    "compressed_size": 1684640561
+  },
+  {
+    "backup_name": "base_00000001000000020000009F_D_00000001000000020000009C",
+    "time": "2025-01-19T20:57:44.025663558+05:00",
+    "wal_file_name": "00000001000000020000009F",
+    "storage_name": "default",
+    "start_time": "2025-01-19T15:57:43.717514Z",
+    "finish_time": "2025-01-19T15:57:44.025462Z",
+    "date_fmt": "%Y-%m-%dT%H:%M:%S.%fZ",
+    "hostname": "astra8",
+    "data_dir": "/var/lib/pgpro/std-17/data",
+    "pg_version": 170002,
+    "start_lsn": 11257511976,
+    "finish_lsn": 11257512288,
+    "is_permanent": false,
+    "system_identifier": 7460572854766239000,
+    "uncompressed_size": 603543,
+    "compressed_size": 66496
+  }
+]
+
+postgres@astra8:~$ wal-g wal-show
++-----+------------+-----------------+--------------------------+--------------------------+---------------+----------------+--------+---------------+
+| TLI | PARENT TLI | SWITCHPOINT LSN | START SEGMENT            | END SEGMENT              | SEGMENT RANGE | SEGMENTS COUNT | STATUS | BACKUPS COUNT |
++-----+------------+-----------------+--------------------------+--------------------------+---------------+----------------+--------+---------------+
+|   1 |          0 |             0/0 | 00000001000000020000009D | 0000000100000002000000AB |            15 |             15 | OK     |             1 |
++-----+------------+-----------------+--------------------------+--------------------------+---------------+----------------+--------+---------------+
+
+postgres@astra8:~$ wal-g wal-show --detailed-json | jq .
+[
+  {
+    "id": 1,
+    "parent_id": 0,
+    "switch_point_lsn": 0,
+    "start_segment": "00000001000000020000009D",
+    "end_segment": "0000000100000002000000AB",
+    "segments_count": 15,
+    "missing_segments": [],
+    "backups": [
+      {
+        "backup_name": "base_00000001000000020000009F_D_00000001000000020000009C",
+        "time": "2025-01-19T20:57:44.025663558+05:00",
+        "wal_file_name": "00000001000000020000009F",
+        "storage_name": "default",
+        "start_time": "2025-01-19T15:57:43.717514Z",
+        "finish_time": "2025-01-19T15:57:44.025462Z",
+        "date_fmt": "%Y-%m-%dT%H:%M:%S.%fZ",
+        "hostname": "astra8",
+        "data_dir": "/var/lib/pgpro/std-17/data",
+        "pg_version": 170002,
+        "start_lsn": 11257511976,
+        "finish_lsn": 11257512288,
+        "is_permanent": false,
+        "system_identifier": 7460572854766239000,
+        "uncompressed_size": 603543,
+        "compressed_size": 66496
+      }
+    ],
+    "segment_range_size": 15,
+    "status": "OK"
+  }
+]
+``` 
