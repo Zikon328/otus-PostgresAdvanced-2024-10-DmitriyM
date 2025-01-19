@@ -680,7 +680,57 @@ and check to make sure that only the key(s) you wanted were added.
 
 ```
 postgres@astra8:~$ pg_probackup backup --instance=air -b FULL --remote-host=ubutest3 --stream --compress-algorithm=zstd --compress-level=3 -j 3
+INFO: Backup start, pg_probackup version: 2.8.5, instance: air, backup ID: SQBV6K, backup mode: FULL, wal mode: STREAM, remote: true, compress-algorithm: zstd, compress-level: 3
+INFO: This PostgreSQL instance was initialized with data block checksums. Data block corruption will be detected
+WARNING: Current PostgreSQL role is superuser. It is not recommended to run pg_probackup under superuser.
+INFO: Backup SQBV6K is going to be taken from standby
+INFO: Database backup start
+INFO: wait for pg_backup_start()
+INFO: PGDATA size: 8679MB
+INFO: Current Start LSN: 3/21000060, TLI: 1
+INFO: Start transferring data files
+INFO: Data files are transferred, time elapsed: 1m:26s
+INFO: wait for pg_stop_backup()
+INFO: pg_stop_backup() successfully executed
+INFO: stop_stream_lsn 3/21000168 currentpos 3/21000168
+INFO: backup->stop_lsn 3/21000168
+INFO: Getting the Recovery Time from WAL
+INFO: Failed to find Recovery Time in WAL, forced to trust current_timestamp
+INFO: Syncing backup files to disk
+INFO: Backup files are synced, time elapsed: 0
+INFO: Validating backup SQBV6K
+INFO: Backup SQBV6K data files are valid
+INFO: Backup SQBV6K resident size: 2590MB
+INFO: Backup SQBV6K completed
+
+postgres@astra8:~$ pg_probackup show --instance=air
+====================================================================================================================================================
+ Instance  Version  ID      Recovery Time                  Mode  WAL Mode  TLI    Time    Data    WAL  Zalg  Zratio  Start LSN   Stop LSN    Status
+====================================================================================================================================================
+ air       17       SQBV6K  2025-01-19 13:51:04.663937+05  FULL  STREAM    1/0  1m:35s  2574MB   16MB  zstd    3.37  3/21000060  3/21000168  OK
+ air       17       SQBSSL  2025-01-19 12:58:45.288153+05  FULL  STREAM    1/0     48s  2574MB   16MB  zstd    3.37  3/1E000028  3/1E0001C8  OK
+ air       17       SQBPX7  2025-01-19 11:56:36.608318+05  FULL  STREAM    1/0     44s  2570MB  192MB  zstd    3.38  3/9016968   3/13125660  OK
+ air       17       SQBPTA  2025-01-19 11:54:11.369512+05  FULL  STREAM    1/0     40s  2569MB   16MB  zstd    3.38  3/2000028   3/20001C8   OK
+ air       17       SQ73YG  2025-01-17 00:12:29.943367+05  FULL  STREAM    1/0  1m:28s  2311MB   16MB  zlib    3.47  2/9A000028  2/9A0001C8  OK
 ```
 
+// pg_probackup определил что бэкап делается со standby сервера<br>
+//<br>
 
+### Итоги
 
+```
+- Выполнен бэкап тестовой БД на ВМ1 
+- Каталог бэкапов выведен в сетевой ресурс NFS на ВМ1
+- Восстановление на другой сервер ( ВМ2 ) с другой Linux !!! ( через сетевой ресурс NFS ВМ1 )
+- Выполнение бэкапа под нагрузкой с другого сервера ( ВМ2 )
+- Создание реплики БД на ВМ3  с  ВМ1
+- Выполнен бэкап с реплики ВМ3 удаленно с ВМ2 на сетевой ресурс NFS ВМ1
+```
+
+### См. также
+
+```
+HW06a - Полная настройка pg_probackup-16 (free) 
+HW06b - Использование WAL-G
+```
