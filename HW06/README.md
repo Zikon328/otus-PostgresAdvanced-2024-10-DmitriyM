@@ -581,9 +581,9 @@ Threads fairness:
 - для реплики создадим клон первой ВМ - тогда имеем
 
 ```
-ВМ1 - Ubuntu-2404 - ubutest  - 192.168.1.244
+ВМ1 - Ubuntu-2404 - ubutest  - 192.168.1.244  ( PG17  port=5433  PGDATA=/pgdata/air/ ) 
 ВМ2 - Astra 1.8   - astra8   - 192.168.1.28
-ВМ3 - Ubuntu-2404 - ubutest2 - 192.168.1.202
+ВМ3 - Ubuntu-2404 - ubutest3 - 192.168.1.203  ( PG17  port=5433  PGDATA=/pgdata/air/ ) 
 на всех ВМ прописали хосты в файле /etc/hosts
 ```
 
@@ -594,13 +594,93 @@ Threads fairness:
 -- делаем бэкап реплики базы с ВМ3 удаленно с ВМ2 и сохраняем сразу на NFS диск ВМ1
 ```
 
+- на ВМ1 разрешим использование репликации в текущей сети - в файл pg_hba.conf - добавим<br>
+  ( не забываем перечитать конфигурацию - pg_reload_conf() )
+
+```
+host    replication     all             samenet               md5
+```
+
 - Создаем реплику на ВМ3
 
 ```
-pg_basebackup
+boss@ubutest3:~$ sudo systemctl stop postgrespro-std-17.service
+boss@ubutest3:~$ sudo rm -r /pgdata/air/
+boss@ubutest3:~$ sudo su - postgres
+postgres@ubutest3:~$ pg_basebackup -h ubutest -p 5433 -R -D /pgdata/air 
+...
+boss@ubutest3:~$ sudo systemctl start postgrespro-std-17.service
+boss@ubutest3:~$ sudo systemctl status postgrespro-std-17.service
+● postgrespro-std-17.service - Postgres Pro std 17 database server
+     Loaded: loaded (/usr/lib/systemd/system/postgrespro-std-17.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-01-19 08:20:17 UTC; 5s ago
+    Process: 6098 ExecStartPre=/opt/pgpro/std-17/bin/check-db-dir ${PGDATA} (code=exited, status=0/SUCCESS)
+   Main PID: 6101 (postgres)
+      Tasks: 6 (limit: 9387)
+     Memory: 85.2M (peak: 85.6M)
+        CPU: 138ms
+     CGroup: /system.slice/postgrespro-std-17.service
+             ├─6101 /opt/pgpro/std-17/bin/postgres -D /pgdata/air
+             ├─6102 "postgres: logger "
+             ├─6103 "postgres: checkpointer "
+             ├─6104 "postgres: background writer "
+             ├─6105 "postgres: startup recovering 000000010000000300000021"
+             └─6106 "postgres: walreceiver streaming 3/21000060"
+
+янв 19 08:20:17 ubutest3 systemd[1]: Starting postgrespro-std-17.service - Postgres Pro std 17 database server...
+янв 19 08:20:17 ubutest3 postgres[6101]: 2025-01-19 08:20:17.387 UTC [6101] LOG:  redirecting log output to logging collector process
+янв 19 08:20:17 ubutest3 postgres[6101]: 2025-01-19 08:20:17.387 UTC [6101] HINT:  Future log output will appear in directory "log".
+янв 19 08:20:17 ubutest3 systemd[1]: Started postgrespro-std-17.service - Postgres Pro std 17 database server.
 ```
 
 
+- для удалённого запуска pg_probackup c ВМ2 на ВМ3 сделаем доступ по ssh
+
+```
+postgres@astra8:~$ ssh-keygen -t ed25519
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/var/lib/postgresql/.ssh/id_ed25519):
+Created directory '/var/lib/postgresql/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /var/lib/postgresql/.ssh/id_ed25519
+Your public key has been saved in /var/lib/postgresql/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:pKsY8U3q0LKJc2ah606Jwq7/MT0ZUat7kHid7J4AS3M postgres@astra8
+The key's randomart image is:
++--[ED25519 256]--+
+|        .        |
+|       . .       |
+|      . o        |
+|     . O .       |
+|  . = E S        |
+|o o= @ B         |
+|o=+.B O o        |
+|*.+O + = .       |
+|B@=.+   o        |
++----[SHA256]-----+
+
+postgres@astra8:~$ ssh-copy-id postgres@ubutest3
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/var/lib/postgresql/.ssh/id_ed25519.pub"
+The authenticity of host 'ubutest3 (192.168.1.203)' can't be established.
+ED25519 key fingerprint is SHA256:lKU663GTvn81PEFHYUw+IrA/dei9nPdWZE6d7QHBCyE.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+postgres@ubutest3's password:
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'postgres@ubutest3'"
+and check to make sure that only the key(s) you wanted were added.
+```
+
+- создание бэкапа
+
+```
+postgres@astra8:~$ pg_probackup backup --instance=air -b FULL --remote-host=ubutest3 --stream --compress-algorithm=zstd --compress-level=3 -j 3
+```
 
 
 
