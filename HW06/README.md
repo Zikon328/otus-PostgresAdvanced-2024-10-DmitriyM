@@ -730,5 +730,5 @@ postgres@astra8:~$ pg_probackup show --instance=air
 
 ### См. также
 
-[ - Полная настройка pg_probackup-16 (free)](../../pg-times/PG_PROBACKUP)<br>
-[ - Использование WAL-G](../../pg-times/WAL-G)<br>
+[ - Полная настройка pg_probackup-16 (free)](https://github.com/Zikon328/pg-times/tree/main/PG_PROBACKUP)<br>
+[ - Использование WAL-G](https://github.com/Zikon328/pg-times/tree/main/WAL-G)<br>
