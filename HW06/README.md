@@ -5,8 +5,9 @@
 - установлена  ubuntu-2404 (host ubutest; user boss; ip 192.168.1.244)
 - установлен PostgreSQL версии PostgresPro-1c-16 
 
-- Но - установим PostgresPro-Std-17 (not free) на порт 5433
 
+$\textsf{\color{blue}- Но - установим PostgresPro-Std-17 (not free) на порт 5433}$<br>
+$\textsf{\color{blue}- репозиторий std версий содержит pg\_probackup}$
 ```
 wget https://repo.postgrespro.ru/std/std-17/keys/pgpro-repo-add.sh 
 chmod +x ./pgpro-repo-add.sh
@@ -14,8 +15,7 @@ sudo ./pgpro-repo-add.sh
 sudo apt install postgrespro-std-17
 ```
 
-- Загрузим демо базу данных ( предварительно создав пустую базу air ) 
-
+$\textsf{\color{blue}- Загрузим демо базу данных ( предварительно создав пустую базу air )}$ 
 ```
 postgres@ubutest:~$ pg_restore -p 5433 --format=custom --no-owner -d air /tmp/postgres_air_2024.backup
 postgres@ubutest:~$ psql -p 5433
@@ -36,30 +36,37 @@ postgres=# \l+
 
 ```
 
-- Данная версия PostgreSQL содержит в репозитории pg_probackup 2.8.5 (not free) - установим
-
+$\textsf{\color{blue}- Данная версия PostgreSQL содержит в репозитории pg\_probackup 2.8.5 (not free) - установим}$
 ```
 sudo apt install pg-probackup-std-17
 -- добавим ссылку на программу
 sudo ln -s /opt/pgpro/std-17/bin/pg_probackup /usr/bin/pg_probackup
 ```
 
-- Настройка pg_probackup
+### Настройка pg_probackup
 
+$\textsf{\color{blue}-- создаём каталог для бэкапов}$
 ```
--- создаём каталог для бэкапов
 boss@ubutest:~$ sudo mkdir /backups/probackup
 boss@ubutest:~$ sudo chown postgres: /backups/probackup
--- инициализируем каталог
+```
+$\textsf{\color{blue}-- инициализируем каталог}$
+```
 sudo -i -u postgres
 postgres@ubutest:~$ pg_probackup init -B /backups/probackup
 INFO: Backup catalog '/backups/probackup' successfully initialized
--- установим переменную на данный каталог и можно использовать без ключа -B
+```
+$\textsf{\color{blue}-- установим переменную на данный каталог и можно использовать без ключа -B}$
+```
 postgres@ubutest:~$ export BACKUP_PATH=/backups/probackup
--- добавляем инстанс ( учитываем порт 5433 )
+```
+$\textsf{\color{blue}-- добавляем инстанс ( учитываем порт 5433 )}$
+```
 postgres@ubutest:~$ pg_probackup add-instance -D /pgdata/air -p 5433 --instance=air
 INFO: Instance 'air' successfully initialized
--- посмотрим какие параметры по умолчанию назначены
+```
+$\textsf{\color{blue}-- посмотрим какие параметры по умолчанию назначены}$
+```
 postgres@ubutest:~$ pg_probackup show-config --instance=air
 # Backup instance information
 pgdata = /pgdata/air
@@ -91,10 +98,9 @@ remote-proto = ssh
 write-rate-limit = 0GBps
 ```
 
-- сдедаем полный архив с разной упаковкой и потоками<br>
-  // здесь на тестах работаем от пользователя postgres - что нежелательно - WARNING предупреждение<br>
-  // в реальной работе надо создавать пользователя отдельного и по настройке следовать инструкции PostgresPro 
-
+$\textsf{\color{blue}- сдедаем полный архив с разной упаковкой и потоками}$<br>
+$\textsf{\color{blue}  // здесь на тестах работаем от пользователя postgres - что нежелательно - WARNING предупреждение}$<br>
+$\textsf{\color{blue}  // в реальной работе надо создавать пользователя отдельного и по настройке следовать инструкции PostgresPro}$ 
 ```
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream
 INFO: Backup start, pg_probackup version: 2.8.5, instance: air, backup ID: SQ73B8, backup mode: FULL, wal mode: STREAM, remote: false, compress-algorithm: none, compress-level: 1
@@ -130,8 +136,7 @@ postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compre
 ...
 ```
 
-- статистика по алгоритмам и сжатию ( быстрее и лучше сжимает - zstd , но вместе с lz4 его нет в бесплатной версии )
-
+$\textsf{\color{blue}- статистика по алгоритмам и сжатию ( быстрее и лучше сжимает - zstd , но вместе с lz4 его нет в бесплатной версии )}$
 ```
 postgres@ubutest:~$ pg_probackup show --instance=air
 ===================================================================================================================================================
@@ -145,8 +150,7 @@ postgres@ubutest:~$ pg_probackup show --instance=air
  air       17       SQ73B8  2025-01-16 18:58:33.749503+00  FULL  STREAM    1/0  1m:27s  8022MB  16MB  none    1.00  2/90000028  2/900001C8  OK
 ```
 
-- удалим большинство бэкапов и оставим последний
-
+$\textsf{\color{blue}- удалим большинство бэкапов и оставим последний}$
 ```
 postgres@ubutest:~$ pg_probackup delete --instance=air -i SQ73B8
 INFO: Resident data size to free by delete of backup SQ73B8 : 8038MB
@@ -167,8 +171,7 @@ INFO: Delete: SQ73W0 2025-01-16 19:10:29+00
 
 ### Восстановление "кластера" на другой ВМ
 
-- настроим доступ к папке /backups с других ВМ по сети как NFS
-
+$\textsf{\color{blue}- настроим доступ к папке /backups с других ВМ по сети как NFS}$
 ```
 boss@ubutest:~$ sudo apt update
 ...
@@ -176,26 +179,24 @@ boss@ubutest:~$ sudo apt install nfs-kernel-server
 ...
 boss@ubutest:~$ sudo -- sh -c "echo '/backups  192.168.1.0/24(rw,no_root_squash,no_subtree_check)' >> /etc/exports"
 boss@ubutest:~$ sudo exportfs -a
--- выдадим полный доступ для всех (other) 
+  -- выдадим полный доступ для всех (other) 
 boss@ubutest:~$ sudo chmod -R o+rwX /backups/
 ```
 
-- есть вторая ВМ с установленным Astra Linux 1.8  и также PostgresPro-std-17<br>
-  настроим доступ к диску /backups первой ВМ по сети
-
+$\textsf{\color{blue}- есть вторая ВМ с установленным Astra Linux 1.8  и также PostgresPro-std-17}$<br>
+$\textsf{\color{blue}  настроим доступ к диску /backups первой ВМ по сети}$
 ```
 boss@astra8:~$ sudo apt update
 ...
 boss@astra8:~$ sudo apt install nfs-common
 ...
--- временно подключим NFS ресурс
+  -- временно подключим NFS ресурс
 boss@astra8:~$ sudo mkdir /backups
 boss@astra8:~$ sudo mount -t nfs 192.168.1.244:/backups /backups 
 ```
 
-- настраивать pg_probackup и базу на второй ВМ - не надо ( работаем от пользователя postgres )<br>
-  проверим что видим бэкапы по сети
-
+$\textsf{\color{blue}- настраивать pg_probackup и базу на второй ВМ - не надо ( работаем от пользователя postgres )}$<br>
+$\textsf{\color{blue}  проверим что видим бэкапы по сети}$
 ```
 postgres@astra8:~$ pg_probackup show -B /backups/probackup/
 
@@ -206,8 +207,7 @@ BACKUP INSTANCE 'air'
  air       17       SQ73YG  2025-01-17 00:12:29.943367+05  FULL  STREAM    1/0  1m:28s  2311MB  16MB  zlib    3.47  2/9A000028  2/9A0001C8  OK
 ```
 
-- восстановим "кластер" из бэкапа на второй ВМ ( /var/lib/pgpro/std-17/data )
-
+$\textsf{\color{blue}- восстановим "кластер" из бэкапа на второй ВМ ( /var/lib/pgpro/std-17/data )}$
 ```
 boss@astra8:~$ sudo systemctl stop postgrespro-std-17.service
 boss@astra8:~$ sudo rm -r /var/lib/pgpro/std-17/data
@@ -226,8 +226,7 @@ INFO: Restored backup files are synced, time elapsed: 1s
 INFO: Restore of backup SQ73YG completed.
 ```
 
-- запускаем СУБД
-
+$\textsf{\color{blue}- запускаем СУБД}$
 ```
 boss@astra8:~$ sudo systemctl start postgrespro-std-17.service
 boss@astra8:~$ sudo systemctl status postgrespro-std-17.service
@@ -254,8 +253,7 @@ boss@astra8:~$ sudo systemctl status postgrespro-std-17.service
 янв 18 11:16:34 astra8 systemd[1]: Started postgrespro-std-17.service - Postgres Pro std 17 database server.
 ```
 
-- прорверим наличие базы
-
+$\textsf{\color{blue}- прорверим наличие базы}$
 ```
 boss@astra8:~$ sudo su - postgres
 postgres@astra8:~$ psql -p 5433
@@ -277,13 +275,12 @@ postgres=# \l+
            |          |           |                  |             |             |        |             | postgres=CTc/postgres |         |                    |
 (4 строки)
 ```
+$\textsf{\color{orange}// база в наличии - востановление успешно, если не считать проблемы с сортировкой на разных версиях Linux}$<br>
+$\textsf{\color{orange}// подобная проблема была HW05 - там провайдер был libc здесь icu - разные версии на Astra Linux и Ubuntu}$<br>
+$\textsf{\color{orange}// Надо следить за этим и при реализации реплики и кластеров Patroni ( Linux должен быть СТРОГО одной версии )}$ 
 
-// база в наличии - востановление успешно, если не считать проблемы с сортировкой на разных версиях Linux<br>
-// подобная проблема была HW05 - там провайдер был libc здесь icu - разные версии на Astra Linux и Ubuntu<br>
-// Надо следить за этим и при реализации реплики и кластеров Patroni ( Linux должен быть СТРОГО одной версии ) 
 
-- определить версию провайдера ICU можно так
-
+$\textsf{\color{blue}- определить версию провайдера ICU можно так}$
 ```
 boss@astra8:~$ uconv -V
 uconv v2.1  ICU 72.1
@@ -292,15 +289,14 @@ boss@ubutest:~$ uconv -V
 uconv v2.1  ICU 74.2
 ```
 
-
 ### Под нагрузкой снимаем бэкап
 
-- запускаем виртуальную нагрузку со второй ВМ 
 
+$\textsf{\color{blue}- запускаем виртуальную нагрузку со второй ВМ}$
 ```
--- установим sysbench
+  -- установим sysbench
 boss@astra8:~$ sudo apt -y install sysbench
--- создадим пользователя и базу данных на первой ВМ
+  -- создадим пользователя и базу данных на первой ВМ
 boss@astra8:~$ sudo su - postgres
 postgres@astra8:~$ psql -p 5433 -h 192.168.1.244
 psql (17.2)
@@ -311,7 +307,7 @@ CREATE ROLE
 postgres=# create database sbtest owner sbtest;
 CREATE DATABASE
 
--- инициализируем sysbench ( 24 таблицы, 100000 записей )
+  -- инициализируем sysbench ( 24 таблицы, 100000 записей )
 postgres@astra8:~$ sysbench \
 --db-driver=pgsql \
 --oltp-table-size=100000 \
@@ -373,10 +369,9 @@ Threads fairness:
     execution time (avg/stddev):   35.2647/0.00
 ```
 
-- запускаем со второй ВМ нагрузку чтения-записи ПРОБНУЮ<br> 
-  ( 8 потоков, 24 таблицы, 100000 записей, 120 сек, отчет каждые 4 сек )<br>
-  нагружает первыую ВМ на ~66%
-
+$\textsf{\color{blue}- запускаем со второй ВМ нагрузку чтения-записи ПРОБНУЮ}$<br> 
+$\textsf{\color{blue}  ( 8 потоков, 24 таблицы, 100000 записей, 120 сек, отчет каждые 4 сек )}$<br>
+$\textsf{\color{blue}  нагружает первыую ВМ на ~66\%}$
 ```
 postgres@astra8:~$ sysbench \
 --db-driver=pgsql \
