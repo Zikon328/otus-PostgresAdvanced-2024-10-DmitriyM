@@ -100,7 +100,8 @@ write-rate-limit = 0GBps
 
 $\textsf{\color{blue}- сдедаем полный архив с разной упаковкой и потоками}$<br>
 $\textsf{\color{blue}  // здесь на тестах работаем от пользователя postgres - что нежелательно - WARNING предупреждение}$<br>
-$\textsf{\color{blue}  // в реальной работе надо создавать пользователя отдельного и по настройке следовать инструкции PostgresPro}$ 
+$\textsf{\color{blue}  // (как настраивается отдельная роль - см. ссылку в конце статьи)}$
+
 ```
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream
 INFO: Backup start, pg_probackup version: 2.8.5, instance: air, backup ID: SQ73B8, backup mode: FULL, wal mode: STREAM, remote: false, compress-algorithm: none, compress-level: 1
@@ -457,9 +458,8 @@ Threads fairness:
     execution time (avg/stddev):   120.0001/0.02
 ```
 
-- запускаем на второй ВМ снова нагрузку
-- а на первой ВМ сразу запускаем создание бэкапа 
-
+$\textsf{\color{blue}- запускаем на второй ВМ снова нагрузку}$<br>
+$\textsf{\color{blue}- а на первой ВМ сразу запускаем создание бэкапа}$ 
 ```
 postgres@ubutest:~$ pg_probackup backup --instance=air -b FULL --stream --compress-algorithm=zstd --compress-level=3 -j 3
 INFO: Backup start, pg_probackup version: 2.8.5, instance: air, backup ID: SQBPX7, backup mode: FULL, wal mode: STREAM, remote: false, compress-algorithm: zstd, compress-level: 3
@@ -492,8 +492,7 @@ postgres@ubutest:~$ pg_probackup show --instance=air
  air       17       SQ73YG  2025-01-16 19:12:29.943367+00  FULL  STREAM    1/0  1m:28s  2311MB   16MB  zlib    3.47  2/9A000028  2/9A0001C8  OK
 ```
 
-- статистика нагрузочного запуска на второй ВМ
-
+$\textsf{\color{blue}- статистика нагрузочного запуска на второй ВМ}$
 ```
 sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
 
@@ -564,26 +563,23 @@ Threads fairness:
     execution time (avg/stddev):   119.9974/0.01
 ```
 
-
-- по результатам тестирования можно сделать вывод, что бэкап создавался с большим приоритетом<br>
-  бэкап без нагрузки - 40с , а с нагрузкой - 44с
-  в нагрузочной статистике есть провал по скорости работы,<br>
-  а также большая часть данных ( база air ) была незадействована в нагрузке
+$\textsf{\color{orange}- по результатам тестирования можно сделать вывод, что бэкап создавался с большим приоритетом}$<br>
+$\textsf{\color{orange}  бэкап без нагрузки - 40с , а с нагрузкой - 44с}$<br>
+$\textsf{\color{orange}  в нагрузочной статистике есть провал по скорости работы,}$<br>
+$\textsf{\color{orange}  а также большая часть данных ( база air ) была незадействована в нагрузке}$
 
 
 ### Работа с репликой
 
-- для реплики создадим клон первой ВМ - тогда имеем
-
+$\textsf{\color{blue}- для реплики создадим клон первой ВМ - тогда имеем}$
 ```
 ВМ1 - Ubuntu-2404 - ubutest  - 192.168.1.244  ( PG17  port=5433  PGDATA=/pgdata/air/ ) 
 ВМ2 - Astra 1.8   - astra8   - 192.168.1.28
 ВМ3 - Ubuntu-2404 - ubutest3 - 192.168.1.203  ( PG17  port=5433  PGDATA=/pgdata/air/ ) 
-на всех ВМ прописали хосты в файле /etc/hosts
+  -- на всех ВМ прописали хосты в файле /etc/hosts
 ```
 
-- План
-
+$\textsf{\color{blue}- План}$
 ```
 -- ВМ1 - основной, ВМ3 - реплика
 -- делаем бэкап реплики базы с ВМ3 удаленно с ВМ2 и сохраняем сразу на NFS диск ВМ1
@@ -591,13 +587,11 @@ Threads fairness:
 
 - на ВМ1 разрешим использование репликации в текущей сети - в файл pg_hba.conf - добавим<br>
   ( не забываем перечитать конфигурацию - pg_reload_conf() )
-
 ```
 host    replication     all             samenet               md5
 ```
 
-- Создаем реплику на ВМ3
-
+$\textsf{\color{blue}- Создаем реплику на ВМ3}$
 ```
 boss@ubutest3:~$ sudo systemctl stop postgrespro-std-17.service
 boss@ubutest3:~$ sudo rm -r /pgdata/air/
@@ -628,9 +622,7 @@ boss@ubutest3:~$ sudo systemctl status postgrespro-std-17.service
 янв 19 08:20:17 ubutest3 systemd[1]: Started postgrespro-std-17.service - Postgres Pro std 17 database server.
 ```
 
-
-- для удалённого запуска pg_probackup c ВМ2 на ВМ3 сделаем доступ по ssh
-
+$\textsf{\color{blue}- для удалённого запуска pg-probackup c ВМ2 на ВМ3 сделаем доступ по ssh}$
 ```
 postgres@astra8:~$ ssh-keygen -t ed25519
 Generating public/private ed25519 key pair.
@@ -671,8 +663,7 @@ Now try logging into the machine, with:   "ssh 'postgres@ubutest3'"
 and check to make sure that only the key(s) you wanted were added.
 ```
 
-- создание бэкапа
-
+$\textsf{\color{blue}- создание бэкапа}$
 ```
 postgres@astra8:~$ pg_probackup backup --instance=air -b FULL --remote-host=ubutest3 --stream --compress-algorithm=zstd --compress-level=3 -j 3
 INFO: Backup start, pg_probackup version: 2.8.5, instance: air, backup ID: SQBV6K, backup mode: FULL, wal mode: STREAM, remote: true, compress-algorithm: zstd, compress-level: 3
@@ -708,9 +699,8 @@ postgres@astra8:~$ pg_probackup show --instance=air
  air       17       SQBPTA  2025-01-19 11:54:11.369512+05  FULL  STREAM    1/0     40s  2569MB   16MB  zstd    3.38  3/2000028   3/20001C8   OK
  air       17       SQ73YG  2025-01-17 00:12:29.943367+05  FULL  STREAM    1/0  1m:28s  2311MB   16MB  zlib    3.47  2/9A000028  2/9A0001C8  OK
 ```
-
-// pg_probackup определил что бэкап делается со standby сервера<br>
-//<br>
+$\textsf{\color{orange}// pg-probackup определил что бэкап делается со standby сервера}$<br>
+$\textsf{\color{orange}// ---}$<br>
 
 ### Итоги
 
@@ -725,5 +715,6 @@ postgres@astra8:~$ pg_probackup show --instance=air
 
 ### См. также
 
-[ - Полная настройка pg_probackup-16 (free)](https://github.com/Zikon328/pg-times/tree/main/PG_PROBACKUP)<br>
-[ - Использование WAL-G](https://github.com/Zikon328/pg-times/tree/main/WAL-G)<br>
+[ - Базовая настройка pg_probackup-16 (free) с отдельной ролью для бэкапирования](https://github.com/Zikon328/pg-times/tree/main/PG_PROBACKUP)<br>
+[ - Базовая настройка и использование WAL-G](https://github.com/Zikon328/pg-times/tree/main/WAL-G)<br>
+
