@@ -62,7 +62,8 @@ INFO: Backup catalog '/backups/probackup' successfully initialized
 ```
 $\textsf{\color{blue}-- установим переменную на данный каталог и можно использовать без ключа -B}$
 ```
-postgres@ubutest:~$ export BACKUP_PATH=/backups/probackup
+postgres@ubutest:~$ echo "export BACKUP_PATH=/backups/probackup" >> ~/.profile
+postgres@ubutest:~$ source ~/.profile
 ```
 $\textsf{\color{blue}-- добавляем инстанс ( учитываем порт 5433 )}$
 ```
@@ -719,6 +720,8 @@ postgres@astra8:~$ pg_probackup show --instance=air
 ```
 $\textsf{\color{orange}// pg-probackup определил что бэкап делается со standby сервера}$<br>
 $\textsf{\color{orange}// ---}$<br>
+$\textsf{\color{orange}// в free версии замечено, что при работе с standby идет ожидание блоков wal (archive-timeout = 5min) если совсем неактивная БД}$<br>
+$\textsf{\color{orange}// уменьшаем до 10s}$
 
 ### Итоги
 
