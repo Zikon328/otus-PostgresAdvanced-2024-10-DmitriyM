@@ -7,7 +7,7 @@
 
 
 $\textsf{\color{blue}- Но - установим PostgresPro-Std-17 (not free) на порт 5433}$<br>
-$\textsf{\color{blue}- репозиторий std версий содержит pg\_probackup}$
+$\textsf{\color{blue}- репозиторий std версий содержит pg-probackup}$
 ```
 wget https://repo.postgrespro.ru/std/std-17/keys/pgpro-repo-add.sh 
 chmod +x ./pgpro-repo-add.sh
@@ -36,7 +36,7 @@ postgres=# \l+
 
 ```
 
-$\textsf{\color{blue}- Данная версия PostgreSQL содержит в репозитории pg\_probackup 2.8.5 (not free) - установим}$
+$\textsf{\color{blue}- Данная версия PostgreSQL содержит в репозитории pg-probackup 2.8.5 (not free) - установим}$
 ```
 sudo apt install pg-probackup-std-17
 -- добавим ссылку на программу
@@ -195,7 +195,7 @@ boss@astra8:~$ sudo mkdir /backups
 boss@astra8:~$ sudo mount -t nfs 192.168.1.244:/backups /backups 
 ```
 
-$\textsf{\color{blue}- настраивать pg_probackup и базу на второй ВМ - не надо ( работаем от пользователя postgres )}$<br>
+$\textsf{\color{blue}- настраивать pg-probackup и базу на второй ВМ - не надо ( работаем от пользователя postgres )}$<br>
 $\textsf{\color{blue}  проверим что видим бэкапы по сети}$
 ```
 postgres@astra8:~$ pg_probackup show -B /backups/probackup/
@@ -371,7 +371,7 @@ Threads fairness:
 
 $\textsf{\color{blue}- запускаем со второй ВМ нагрузку чтения-записи ПРОБНУЮ}$<br> 
 $\textsf{\color{blue}  ( 8 потоков, 24 таблицы, 100000 записей, 120 сек, отчет каждые 4 сек )}$<br>
-$\textsf{\color{blue}  нагружает первыую ВМ на ~66\%}$
+$\textsf{\color{blue}  нагружает первыую ВМ на 2/3 }$
 ```
 postgres@astra8:~$ sysbench \
 --db-driver=pgsql \
