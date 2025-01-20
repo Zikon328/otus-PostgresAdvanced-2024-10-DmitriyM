@@ -33,8 +33,7 @@
     янв 13 17:07:49 ubutest systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
 ```
 
-- добавим таблицу colors в текущую базу данных postgres
-
+$\textsf{\color{blue}- добавим таблицу colors в текущую базу данных postgres}$
 ```
 postgres=# create table colors ( id int, name varchar(30) );
 CREATE TABLE
@@ -50,8 +49,7 @@ postgres=# select * from colors;
 (4 строки)
 ``` 
 
-- останавливаем PostgreSQL
-
+$\textsf{\color{blue}- останавливаем PostgreSQL}$
 ```
 boss@ubutest:~$ sudo systemctl stop postgrespro-1c-16.service
 boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
@@ -70,8 +68,7 @@ boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 янв 13 17:18:39 ubutest systemd[1]: postgrespro-1c-16.service: Consumed 1.315s CPU time, 73.1M memory peak, 0B memory swap peak.
 ```
 
-- диск sdb есть неразмеченный
-
+$\textsf{\color{blue}- диск sdb есть неразмеченный}$
 ```
 boss@ubutest:~$ lsblk
 NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
@@ -82,8 +79,7 @@ sdb      8:16   0   25G  0 disk
 sr0     11:0    1  2,6G  0 rom
 ```
 
-- разметим диск с использованием lvm и отформатируем в xfs
-
+$\textsf{\color{blue}- разметим диск с использованием lvm и отформатируем в xfs}$
 ```
 boss@ubutest:~$ sudo pvcreate /dev/sdb
   Physical volume "/dev/sdb" successfully created.
@@ -105,15 +101,13 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
 Discarding blocks...Done.
 ```
 
-- создаем каталог /pgdata
-- в файле /etc/fstab добавляем строку
-
+$\textsf{\color{blue}- создаем каталог /pgdata}$<br>
+$\textsf{\color{blue}- в файле /etc/fstab добавляем строку}$
 ```
 /dev/vg1/pgdata /pgdata  xfs  defaults   1 2
 ```
 
-- проверяем настройку fstab 
-
+$\textsf{\color{blue}- проверяем настройку fstab}$
 ```
 boss@ubutest:~$ sudo mkdir /pgdata
 boss@ubutest:~$ sudo systemctl daemon-reload
@@ -132,20 +126,17 @@ boss@ubutest:~$ sudo chmod 750 /pgdata
 boss@ubutest:~$ ls -la /  | grep pgdata
 drwxr-x---   2 postgres postgres          6 янв 13 17:25 pgdata
 ```
+$\textsf{\color{orange}// -- Комментарии --}$<br>
+$\textsf{\color{orange}// ubuntu-2404  Требует daemon-reload при изменеии /etc/fstab}$<br>
+$\textsf{\color{orange}// postgrespro-1c-16 - папка с данными должна быть с доступом 750 или 700}$<br>
 
-// -- Комментарии --<br>
-// ubuntu-2404  Требует daemon-reload при изменеии /etc/fstab<br>
-// postgrespro-1c-16 - папка с данными должна быть с доступом 750 или 700<br>
-
-- перенесём данные в новую папку
-
+$\textsf{\color{blue}- перенесём данные в новую папку}$
 ```
 boss@ubutest:~$ sudo su - postgres
 postgres@ubutest:~$ mv /var/lib/pgpro/1c-16/data/* /pgdata/
 ```
 
-- запустим сервер PostgreSQL
-
+$\textsf{\color{blue}- запустим сервер PostgreSQL}$
 ```
 sudo systemctl start postgrespro-1c-16.service
 Job for postgrespro-1c-16.service failed because the control process exited with error code.
@@ -164,18 +155,15 @@ boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 янв 13 17:42:21 ubutest systemd[1]: postgrespro-1c-16.service: Failed with result 'exit-code'.
 янв 13 17:42:21 ubutest systemd[1]: Failed to start postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
 ```
+$\textsf{\color{orange}// Ошибка - нет данных в папке - надо настроить папку PGDATA}$
 
-// Ошибка - нет данных в папке - надо настроить папку PGDATA
-
-- для данной версии PostgreSQL - настройки в файле  /etc/default/postgrespro-1c-16
-- меняем PGDATA на новый каталог
-  
+$\textsf{\color{blue}- для данной версии PostgreSQL - настройки в файле  /etc/default/postgrespro-1c-16}$<br>
+$\textsf{\color{blue}- меняем PGDATA на новый каталог}$
 ```
 PGDATA=/pgdata
 ```
 
-- запускаем сервер
-
+$\textsf{\color{blue}- запускаем сервер}$
 ```
 boss@ubutest:~$ sudo systemctl start postgrespro-1c-16.service
 boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
@@ -201,11 +189,9 @@ boss@ubutest:~$ sudo systemctl status postgrespro-1c-16.service
 янв 13 17:47:06 ubutest postgres[138021]: 2025-01-13 17:47:06.121 UTC [138021] ПОДСКАЗКА:  В дальнейшем протоколы будут выводиться в каталог "log".
 янв 13 17:47:06 ubutest systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
 ```
+$\textsf{\color{orange}// сервер запустился и видно что с параметром каталога БД  /pgdata}$
 
-// сервер запустился и видно что с параметром каталога БД  /pgdata
-
-- посмотрим данные что вводили ранее
-
+$\textsf{\color{blue}- посмотрим данные что вводили ранее}$
 ```
 boss@ubutest:~$ sudo su - postgres
 postgres@ubutest:~$ psql
@@ -221,15 +207,14 @@ postgres=# select * from colors;
   4 | gray
 (4 строки)
 ```
-
-// Данные присутствуют - перенос произведён<br> 
-// --<br>
-// Также есть вариант настройки через символьную ссылку к папке данных<br>
-// тогда в настройках не надо менять путь PGDATA<br>
-// --<br>
-// Через символьную ссылку перенаправляют каталог wal на другой диск<br>
-// и это также делает ключ -X команды initdb<br>
-// <br>
+$\textsf{\color{orange}// Данные присутствуют - перенос произведён}$<br> 
+$\textsf{\color{orange}// --}$<br>
+$\textsf{\color{orange}// Также есть вариант настройки через символьную ссылку к папке данных}$<br>
+$\textsf{\color{orange}// тогда в настройках не надо менять путь PGDATA}$<br>
+$\textsf{\color{orange}// --}$<br>
+$\textsf{\color{orange}// Через символьную ссылку перенаправляют каталог wal на другой диск}$<br>
+$\textsf{\color{orange}// и это также делает ключ -X команды initdb}$<br>
+$\textsf{\color{orange}// }$<br>
 
 
 ### Комментарии
@@ -298,8 +283,8 @@ postgres=# select * from colors;
 //  Есть ещё одна ВМ  - Astra Linux 1.8  и  также установлен PostgresPro-1C-16<br>
 //  Для переноса в гипервизоре 
 
-- Отключим ВМ с Ubuntu и временно подключим диск с данными к Astra Linux
 
+$\textsf{\color{blue}- Отключим ВМ с Ubuntu и временно подключим диск с данными к Astra Linux}$
 ```
 boss@astra8:~$ lsblk
 NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
@@ -314,11 +299,9 @@ sdd            8:48   0   80G  0 disk
 └─gu01-u01   252:1    0   80G  0 lvm  /u01
 sr0           11:0    1  6,5G  0 rom
 ```
+$\textsf{\color{orange}// диск sdc 25G автоматически просканировался на LVM}$
 
-// диск sdc 25G автоматически просканировался на LVM
-
-- смонтируем временно диск в папку /pgdata
-
+$\textsf{\color{blue}- смонтируем временно диск в папку /pgdata}$
 ```
 boss@astra8:~$ sudo mkdir /pgdata
 boss@astra8:~$ sudo mount /dev/vg1/pgdata /pgdata
@@ -342,8 +325,7 @@ boss@astra8:~$ ls -la / | grep pgdata
 drwxr-x---  21 postgres postgres       4096 янв 14 15:36 pgdata
 ```
 
-- запустим сервер СУБД с данной папкой ( исправили PGDATA в /etc/default/postgrespro-1c-16 )  
-
+$\textsf{\color{blue}- запустим сервер СУБД с данной папкой ( исправили PGDATA в /etc/default/postgrespro-1c-16 )}$  
 ```
 boss@astra8:~$ sudo systemctl start postgrespro-1c-16.service
 boss@astra8:~$ sudo systemctl status postgrespro-1c-16.service
@@ -370,8 +352,7 @@ boss@astra8:~$ sudo systemctl status postgrespro-1c-16.service
 янв 14 16:24:53 astra8 systemd[1]: Started postgrespro-1c-16.service - Postgres Pro 1c 16 database server.
 ```
 
-- проверим данные в базе
-
+$\textsf{\color{blue}- проверим данные в базе}$
 ```
 boss@astra8:~$ sudo su - postgres
 postgres@astra8:~$ psql
@@ -390,10 +371,9 @@ postgres=# select * from colors;
   4 | gray
 (4 строки)
 ```
+$\textsf{\color{orange}// База работает но, есть предупреждение по библиотеке libc разных версий Linux ???}$<br>
 
-// База работает но, есть предупреждение по библиотеке libc разных версий Linux ???<br>
-// посмотреть версию можно так ( При этом локаль Linux и параметры LC СУБД идентичны )
-
+$\textsf{\color{blue}-- посмотреть версию можно так ( При этом локаль Linux и параметры LC СУБД идентичны )}$
 ```
 boss@astra8:~$ ldd --version
 ldd (Debian GLIBC 2.36-9+deb12u7+ci202405171200+astra5+b1) 2.36
@@ -404,10 +384,9 @@ ldd (Ubuntu GLIBC 2.39-0ubuntu8.3) 2.39
 Copyright (C) 2024 Free Software Foundation, Inc.
 ```
 
-// -----------------------------------------<br>
-
-// При возвращении диска обратно в систему Ubuntu<br>
-// восстановить надо права доступа
+$\textsf{\color{blue}// -----------------------------------------}$<br>
+$\textsf{\color{blue}// При возвращении диска обратно в систему Ubuntu}$<br>
+$\textsf{\color{blue}// восстановить надо права доступа}$
 
 ```
 boss@ubutest:~$ sudo chown -R postgres: /pgdata
