@@ -7,7 +7,7 @@
 
 
 $\textsf{\color{blue}- Но - установим PostgresPro-Std-17 (not free) на порт 5433}$<br>
-$\textsf{\color{blue}- репозиторий std версий содержит pg-probackup}$
+$\textsf{\color{blue}- репозиторий std версии содержит pg-probackup}$
 ```
 wget https://repo.postgrespro.ru/std/std-17/keys/pgpro-repo-add.sh 
 chmod +x ./pgpro-repo-add.sh
@@ -42,6 +42,10 @@ sudo apt install pg-probackup-std-17
 -- добавим ссылку на программу
 sudo ln -s /opt/pgpro/std-17/bin/pg_probackup /usr/bin/pg_probackup
 ```
+**// при  установке имя пакета с "-" (дефис) после "pg"**<br>
+**// а сама программа с "_" (подчеркивание) после "pg"**<br>
+**// для бесплатных версий также пакет pg-probackup-16 - программа pg_probackup-16**
+
 
 ### Настройка pg_probackup
 
@@ -289,6 +293,20 @@ uconv v2.1  ICU 72.1
 boss@ubutest:~$ uconv -V
 uconv v2.1  ICU 74.2
 ```
+
+$\textsf{\color{blue}- привести в норму сортироку можно командами (для каждой базы включая template1)}$
+```
+psql -p 5433
+ALTER DATABASE postgres REFRESH COLLATION VERSION;
+REINDEX DATABASE postgres;
+\c air
+ALTER DATABASE air REFRESH COLLATION VERSION;
+REINDEX DATABASE air;
+\c template1
+ALTER DATABASE template1 REFRESH COLLATION VERSION;
+REINDEX DATABASE template1;
+```
+
 
 ### Под нагрузкой снимаем бэкап
 
@@ -585,8 +603,8 @@ $\textsf{\color{blue}- План}$
 -- делаем бэкап реплики базы с ВМ3 удаленно с ВМ2 и сохраняем сразу на NFS диск ВМ1
 ```
 
-- на ВМ1 разрешим использование репликации в текущей сети - в файл pg_hba.conf - добавим<br>
-  ( не забываем перечитать конфигурацию - pg_reload_conf() )
+// на ВМ1 разрешим использование репликации в текущей сети - в файл pg_hba.conf - добавим<br>
+//  ( не забываем перечитать конфигурацию - pg_reload_conf() )
 ```
 host    replication     all             samenet               md5
 ```
