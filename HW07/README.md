@@ -96,14 +96,15 @@ sudo systemctl start etcd
 
 - проверяем состояние кластера DCS и его хосты
 ```
--- список хостов кластера
-astra@test-dcs2:~$ ETCDCTL_API=2 etcdctl member list
+  -- список хостов кластера
+astra@test-dcs1:~$ ETCDCTL_API=2 etcdctl member list
 504ffa3d42ead29c: name=test-dcs1 peerURLs=http://192.168.1.151:2380 clientURLs=http://192.168.1.151:2379 isLeader=true
 56f19cfb6ceccf5f: name=test-dcs2 peerURLs=http://192.168.1.152:2380 clientURLs=http://192.168.1.152:2379 isLeader=false
-9ffbb47380af1c79: name=test-dcs3 peerURLs=http://192.168.1.153:2380 clientURLs= isLeader=false
+9ffbb47380af1c79: name=test-dcs3 peerURLs=http://192.168.1.153:2380 clientURLs=http://192.168.1.153:2379 isLeader=false
 
--- определить статус хостов
-endpoint status --cluster -w table
+
+  -- определить статус хостов
+astra@test-dcs1:~$ etcdctl endpoint status --cluster -w table
 +---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
 |         ENDPOINT          |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
 +---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
