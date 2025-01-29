@@ -38,11 +38,11 @@ sudo useradd -m -d /var/lib/etcd -s /usr/sbin/nologin -g etcd etcd
 sudo mkdir ~etcd/default
 sudo chown etcd: ~etcd/default
 ```
-// бинарные файлы в каталоге - /var/local/bin/<br>
-// шаблон для systemd  -  /usr/lib/systemd/system/etcd.service
+_// бинарные файлы в каталоге - /var/local/bin/_<br>
+_// шаблон для systemd  -  /usr/lib/systemd/system/etcd.service_
 
 __- записываем файл конфигурации ( меняя параметры для каждого хоста )__<br>
-( /etc/default/etcd )
+_( /etc/default/etcd )_
 ```
 # ETCD_NAME="test-dcs1"  - set in etcd.service as hostname
 ETCD_LISTEN_CLIENT_URLS="http://192.168.1.151:2379,http://127.0.0.1:2379"
@@ -184,7 +184,7 @@ sudo chmod 750 /pgdata
 
 #### __Установка Patroni__
 
-__- Загружаем подготовленный пакет Patroni для оффлайн установки и дополниетльные пакеты__<br>
+__- загружаем подготовленный пакет Patroni для оффлайн установки и дополниетльные пакеты__<br>
 ```
    -- ( в данном пакете есть драйвера и для ETCD и для CONSUL )<br>
    -- Patroni - программа на Python и зависимые пакеты зависят от версии Python<br>
@@ -247,7 +247,7 @@ cd patroni-2025-01
 
 #### Настраиваем Patroni
 
-- подготавливаем каталоги 
+__- подготавливаем каталоги__
 ```
 sudo mkdir /etc/patroni /var/log/patroni /var/log/postgres
 sudo chown -R postgres: /etc/patroni /var/log/patroni /var/log/postgres
