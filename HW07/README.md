@@ -315,7 +315,7 @@ bootstrap:
         logging_collector: on
         checkpoint_timeout: 30
         synchronous_commit: 'on'
-        synchronous_standby_names: 'ANY 1 (test-db1,test-db2)'
+        synchronous_node_count: 1
 
         max_connections: 40
         shared_buffers: '512MB'
@@ -359,8 +359,7 @@ postgresql:
       password: 'posadmin'
 
   parameters:
-    unix_socket_directories: '/var/run/postgres'
-    stats_temp_directory: '/var/lib/pgsql_stats_tmp'
+    unix_socket_directories: '/tmp'
     logging_collector: on
     log_directory: '/var/log/postgres'
 
@@ -370,7 +369,7 @@ tags:
   clonefrom: false
   nosync: false
 ```
-// предустановлено, что одна реплика синхронная
+// предустановлено, что одна реплика синхронная 
 // с версии patroni 4.0 - убрана ветка bootstrap.users
 
 
@@ -397,6 +396,8 @@ WantedBy=multi-user.target
 
 - запускаем службы Patroni на хостах кластера СУБД
 ```
+sudo systemctl daemon-reload
+sudo systemctl start patroni
 ```
 
 - дополнительные настройки для CLI
@@ -405,11 +406,57 @@ sudo su - postgres -c "echo 'export PATRONI_CONFIGURATION=/etc/patroni/patroni.y
 sudo su - postgres -c "echo 'export PATRONICTL_CONFIG_FILE=/etc/patroni/patroni.yml' >> ~postgres/.profile"
 ```
 
-
-- проверяем работоспособность кластера
+- проверяем работоспособность кластера<br>
 ( работаем по пользователем postgres )
 ```
+astra@test-db2:~$ sudo su - postgres
+postgres@test-db2:~$ patronictl list
++ Cluster: instance-1 (7465315189447592757) -----+----+-----------+
+| Member   | Host     | Role         | State     | TL | Lag in MB |
++----------+----------+--------------+-----------+----+-----------+
+| test-db1 | test-db1 | Leader       | running   |  2 |           |
+| test-db2 | test-db2 | Sync Standby | streaming |  2 |         0 |
+| test-db3 | test-db3 | Replica      | running   |  2 |         0 |
++----------+----------+--------------+-----------+----+-----------+
 ```
+// test-db2 - в режиме синхронной реплики
+
+- переведём на вторую ноду Лидера
+```
+postgres@test-db2:~$ patronictl switchover
+Current cluster topology
++ Cluster: instance-1 (7465315189447592757) -----+----+-----------+
+| Member   | Host     | Role         | State     | TL | Lag in MB |
++----------+----------+--------------+-----------+----+-----------+
+| test-db1 | test-db1 | Leader       | running   |  2 |           |
+| test-db2 | test-db2 | Sync Standby | streaming |  2 |         0 |
+| test-db3 | test-db3 | Replica      | streaming |  2 |         0 |
++----------+----------+--------------+-----------+----+-----------+
+Primary [test-db1]:
+Candidate ['test-db2', 'test-db3'] []: test-db2
+When should the switchover take place (e.g. 2025-01-29T23:12 )  [now]:
+Are you sure you want to switchover cluster instance-1, demoting current leader test-db1? [y/N]: y
+2025-01-29 22:13:02.24582 Successfully switched over to "test-db2"
++ Cluster: instance-1 (7465315189447592757) +----+-----------+
+| Member   | Host     | Role    | State     | TL | Lag in MB |
++----------+----------+---------+-----------+----+-----------+
+| test-db1 | test-db1 | Replica | stopped   |    |   unknown |
+| test-db2 | test-db2 | Leader  | running   |  2 |           |
+| test-db3 | test-db3 | Replica | streaming |  2 |         0 |
++----------+----------+---------+-----------+----+-----------+
+
+postgres@test-db2:~$ patronictl list
++ Cluster: instance-1 (7465315189447592757) -----+----+-----------+
+| Member   | Host     | Role         | State     | TL | Lag in MB |
++----------+----------+--------------+-----------+----+-----------+
+| test-db1 | test-db1 | Replica      | streaming |  3 |         0 |
+| test-db2 | test-db2 | Leader       | running   |  3 |           |
+| test-db3 | test-db3 | Sync Standby | streaming |  3 |         0 |
++----------+----------+--------------+-----------+----+-----------+
+```
+
+#### Настройка HAProxy
+
 
 
 
