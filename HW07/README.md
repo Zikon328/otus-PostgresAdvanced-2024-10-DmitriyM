@@ -1,8 +1,8 @@
-### Домашнее задание - Кластер Patroni
+### __Домашнее задание - Кластер Patroni__
 
-#### План и оборудование
+#### __План и оборудование__
 
-- настроим 7 виртуальных машин
+__- настроим 7 виртуальных машин__
 ```
 - три хоста - кластер DSC ( ETCD )  - [ test-dcs1, test-dcs2, test-dcs3 ]
 - три хоста - кластер СУБД  ( Patroni + PostgreSQL ) - [ test-db1, test-db2, test-db3 ]
@@ -19,17 +19,17 @@
 - HaProxy 3.1.2
 ```
 
-#### Установим дополнительные пакеты
+#### __Установим дополнительные пакеты__
 
 ```
 sudo apt install wget
 ```
 
 
-#### Установка и настройка ETCD
+#### __Установка и настройка ETCD__
 
-- на 3-х хостах кластера DCS разворачиваем пакет программы ETCD<br>
-( хост 192.168.1.244 - локальный репозиторий по ftp )
+__- на 3-х хостах кластера DCS разворачиваем пакет программы ETCD__<br>
+_( хост 192.168.1.244 - локальный репозиторий по ftp )_
 ```
 wget ftp://192.168.1.244/etcd-3.5.17.tar.gz
 sudo tar -zxvf etcd-3.5.17.tar.gz -C /
@@ -41,7 +41,7 @@ sudo chown etcd: ~etcd/default
 // бинарные файлы в каталоге - /var/local/bin/<br>
 // шаблон для systemd  -  /usr/lib/systemd/system/etcd.service
 
-- записываем файл конфигурации ( меняя параметры для каждого хоста )<br>
+__- записываем файл конфигурации ( меняя параметры для каждого хоста )__<br>
 ( /etc/default/etcd )
 ```
 # ETCD_NAME="test-dcs1"  - set in etcd.service as hostname
@@ -59,8 +59,8 @@ ETCD_INITIAL_ELECTION_TICK_ADVANCE="false"
 ETCD_ENABLE_V2="true"
 ```
 
-- файл настройки службы уже есть из пакета - и запускаем службы ETCD на кластере DCS<br>
-( /usr/lib/systemd/system/etcd.service ) 
+__- файл настройки службы уже есть из пакета - и запускаем службы ETCD на кластере DCS__<br>
+_( /usr/lib/systemd/system/etcd.service )_
 ```
 [Unit]
 Description=etcd - highly-available key value store
@@ -87,14 +87,14 @@ WantedBy=multi-user.target
 Alias=etcd2.service
 ```
 
-- запускаем службы на каждом хосте
+__- запускаем службы на каждом хосте__
 ```
 sudo systemctl daemon-reload
 sudo systemctl enable etcd
 sudo systemctl start etcd
 ```
 
-- проверяем состояние кластера DCS и его хосты
+__- проверяем состояние кластера DCS и его хосты__
 ```
   -- список хостов кластера
 astra@test-dcs1:~$ ETCDCTL_API=2 etcdctl member list
@@ -124,11 +124,11 @@ astra@test-dcs2:~$ etcdctl endpoint health --cluster -w table
 +---------------------------+--------+-------------+-------+
 ```
 
-#### Установка СУБД
+#### __Установка СУБД__
 
-- на 3-х хостах кластера СУБД - разворачиваем PostgresPro 1C 16<br>
--- останавливаем службу и проверяем установленные Локальные языки<br>
--- во время инициализации кластера PostgreSQL будет определять текущую "локаль" и использует её<br>
+__- на 3-х хостах кластера СУБД - разворачиваем PostgresPro 1C 16__<br>
+_-- останавливаем службу и проверяем установленные Локальные языки_<br>
+_-- во время инициализации кластера PostgreSQL будет определять текущую "локаль" и использует её_<br>
 ```
 wget https://repo.postgrespro.ru/1c/1c-17/keys/pgpro-repo-add.sh
 chmod +x ./pgpro-repo-add.sh
@@ -142,9 +142,9 @@ sudo systemctl disable postgrespro-1c-17
   -- Patroni сам будет запускать сервер PostgreSQL
 ```
 
-#### Создание диска для базы
+#### __Создание диска для базы__
 
-- размечаем раздел а LVM и форматируем XFS
+__- размечаем раздел а LVM и форматируем XFS__
 ```
 astra@test-db1:~$ lsblk
 NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
@@ -172,7 +172,7 @@ log      =internal log           bsize=4096   blocks=16384, version=2
 realtime =none                   extsz=4096   blocks=0, rtextents=0
 ```
 
-- настраиваем монтирование
+__- настраиваем монтирование__
 ```
 sudo mkdir /pgdata
 sudo -- sh - c "echo '/dev/vg1/pgdata /pgdata  xfs  defaults   1 2' >> /etc/fstab"
@@ -182,9 +182,9 @@ sudo chown -R postgres: /pgdata
 sudo chmod 750 /pgdata
 ```
 
-#### Установка Patroni
+#### __Установка Patroni__
 
-- Загружаем подготовленный пакет Patroni для оффлайн установки и дополниетльные пакеты<br>
+__- Загружаем подготовленный пакет Patroni для оффлайн установки и дополниетльные пакеты__<br>
 ```
    -- ( в данном пакете есть драйвера и для ETCD и для CONSUL )<br>
    -- Patroni - программа на Python и зависимые пакеты зависят от версии Python<br>
@@ -205,8 +205,8 @@ wget ftp://192.168.1.244/patroni-2025-01.tar.gz
 tar -zxvf patroni-2025-01.tar.gz
 ```
 
-- скрипт установки и обновления Patroni оффлайн - pupdate.sh<br>
-(если параметр задан 'etcd' устанавливается клиент для etcd - иначе - клиент для consul) 
+__- скрипт установки и обновления Patroni оффлайн - pupdate.sh__<br>
+_(если параметр задан 'etcd' устанавливается клиент для etcd - иначе - клиент для consul)_<br>
 ```
 #!/bin/bash
 
@@ -224,7 +224,7 @@ sudo pip install $OPTI -f $WHLPATH/ wheel
 case "$1" in
   etcd)
     #-- for ETCD - use this pack
-    sudo pip install $OPTI -f $WHLPATH/ etcd3
+    sudo pip install $OPTI -f $WHLPATH/ python_etcd
     ;;
   *)
     #-- for Consul - use this pack
@@ -238,7 +238,7 @@ sudo pip install $OPTI -f $WHLPATH/ psycopg_binary
 sudo pip install $OPTI -f $WHLPATH/ patroni
 ```
 
-- запускаем скрипт
+__- запускаем скрипт__
 ```
 cd patroni-2025-01
 ./pupdate.sh etcd
@@ -254,8 +254,8 @@ sudo chown -R postgres: /etc/patroni /var/log/patroni /var/log/postgres
 sudo chmod 700 /etc/patroni /var/log/patroni /var/log/postgres
 ```
 
-- файла настроек Patroni ( исправляем параметры для каждого хоста )<br>
-( /etc/patroni/patroni.yml )
+__- файла настроек Patroni ( исправляем параметры для каждого хоста )__<br>
+_( /etc/patroni/patroni.yml )_
 ```
 name: test-db1
 namespace: /db/
@@ -369,12 +369,12 @@ tags:
   clonefrom: false
   nosync: false
 ```
-// предустановлено, что одна реплика синхронная 
-// с версии patroni 4.0 - убрана ветка bootstrap.users
+_// предустановлено, что будет одна реплика синхронная_<br> 
+_// с версии patroni 4.0 - убрана ветка bootstrap.users_
 
 
-- файл настройки службы (daemon systemd) для Patroni ( одинаковый на всех хостах)<br>
-( /etc/systemd/system/patroni.service ) 
+__- файл настройки службы (daemon systemd) для Patroni ( одинаковый на всех хостах)__<br>
+_( /etc/systemd/system/patroni.service )_ 
 ```
 [Unit]
 Description=Runners to orchestrate a high-availability PostgreSQL
@@ -394,20 +394,22 @@ Restart=no
 WantedBy=multi-user.target
 ```
 
-- запускаем службы Patroni на хостах кластера СУБД
+#### __Запускаем кластер Patroni__
+
+__- запускаем службы Patroni на хостах кластера СУБД__
 ```
 sudo systemctl daemon-reload
 sudo systemctl start patroni
 ```
 
-- дополнительные настройки для CLI
+__- дополнительные настройки для CLI__
 ```
 sudo su - postgres -c "echo 'export PATRONI_CONFIGURATION=/etc/patroni/patroni.yml' >> ~postgres/.profile"
 sudo su - postgres -c "echo 'export PATRONICTL_CONFIG_FILE=/etc/patroni/patroni.yml' >> ~postgres/.profile"
 ```
 
-- проверяем работоспособность кластера<br>
-( работаем по пользователем postgres )
+__- проверяем работоспособность кластера__<br>
+_( работаем по пользователем postgres )_
 ```
 astra@test-db2:~$ sudo su - postgres
 postgres@test-db2:~$ patronictl list
@@ -419,9 +421,9 @@ postgres@test-db2:~$ patronictl list
 | test-db3 | test-db3 | Replica      | running   |  2 |         0 |
 +----------+----------+--------------+-----------+----+-----------+
 ```
-// test-db2 - в режиме синхронной реплики
+_// test-db2 - в режиме синхронной реплики_
 
-- переведём на вторую ноду Лидера
+__- переведём на вторую ноду Лидера__
 ```
 postgres@test-db2:~$ patronictl switchover
 Current cluster topology
@@ -455,7 +457,7 @@ postgres@test-db2:~$ patronictl list
 +----------+----------+--------------+-----------+----+-----------+
 ```
 
-#### Настройка HAProxy
+#### __Настройка HAProxy__
 
 
 
