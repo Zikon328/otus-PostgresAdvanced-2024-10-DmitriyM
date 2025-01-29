@@ -184,27 +184,201 @@ sudo chmod 750 /pgdata
 
 #### Установка и настройка Patroni
 
-- Загружаем подготовленный пакет Patroni для оффлайн установки<br>
--- ( в данном пакете есть драйвера и для ETCD и для CONSUL )<br>
--- Patroni - программа на Python и зависимые пакеты зависят от версии Python<br>
--- ( на старых версиях будут сильно устаревшие пакеты библиотек Python )<br>
--- В  SUSE Enterprise Linux 15 - Python 3.6 ( есть оффициальный пакет с Python 3.11, но есть ?? )<br>
--- В  Astra Linux 1.7 - Python 3.7  ( сложно обновить до новой версии )<br>
--- В  Astra Linux 1.8 - Python 3.11   ( как и в Debian 12 )<br>
--- В  Ubuntu 2404 - Рython 3.12<br>
+- Загружаем подготовленный пакет Patroni для оффлайн установки и дополниетльные пакеты<br>
 ```
+   -- ( в данном пакете есть драйвера и для ETCD и для CONSUL )<br>
+   -- Patroni - программа на Python и зависимые пакеты зависят от версии Python<br>
+   -- ( на старых версиях будут сильно устаревшие пакеты библиотек Python )<br>
+   -- SUSE Enterprise Linux 15 - Python 3.6 ( есть оффициальный пакет с Python 3.11, но есть ?? )<br>
+   -- Astra Linux 1.7 - Python 3.7  ( сложно обновить до новой версии )<br>
+   -- Astra Linux 1.8 - Python 3.11   ( как и в Debian 12 )<br>
+   -- Ubuntu 2404 - Рython 3.12<br>
+   -- Новые версии Linux запрещают установку новых пакетов Python - не входящих в стандартные репозитории
+   --     надо использовать VENV ( но это другая история - см. приложение - patroni+consul )
+   --     на данном тестировании меняем системные пакеты
 ```
 
-- скрипт установки Patroni оффлайн
 ```
+sudo apt -y install python3-pip
+
+wget ftp://192.168.1.244/patroni-2025-01.tar.gz
+tar -zxvf patroni-2025-01.tar.gz
 ```
+
+- скрипт установки и обновления Patroni оффлайн - pupdate.sh<br>
+(если параметр задан 'etcd' устанавливается клиент для etcd - иначе - клиент для consul) 
+```
+#!/bin/bash
+
+# install or update Patroni
+
+#sudo apt -y install python3-pip
+
+OPTI='--no-index --upgrade --force-reinstall --break-system-packages --root-user-action=ignore'
+WHLPATH=./whl311
+
+sudo python3 -m pip install --upgrade $OPTI -f $WHLPATH/ pip
+sudo pip install $OPTI -f $WHLPATH/ setuptools
+sudo pip install $OPTI -f $WHLPATH/ wheel
+
+case "$1" in
+  etcd)
+    #-- for ETCD - use this pack
+    sudo pip install $OPTI -f $WHLPATH/ etcd3
+    ;;
+  *)
+    #-- for Consul - use this pack
+    sudo pip install $OPTI -f $WHLPATH/ py_consul
+    ;;
+esac
+
+sudo pip install $OPTI -f $WHLPATH/ psycopg
+sudo pip install $OPTI -f $WHLPATH/ psycopg_binary
+
+sudo pip install $OPTI -f $WHLPATH/ patroni
+```
+
+- запускаем скрипт
+```
+cd patroni-2025-01
+./pupdate.sh etcd
+...
+```
+
+#### Настраиваем Patroni
 
 - шаблон файла настроек Patroni ( исправляем параметры для каждого хоста )
 ```
-```
+name: test-db1
+namespace: /db/
+scope: instance-1
 
-- файл настройки службы (daemon systemd) для Patroni 
+watchdog:
+  mode: off
+
+log:
+  level: INFO
+  format: '%(asctime)s %(levelname)s: %(message)s'
+  dateformat: ''
+  max_queue_size: 1000
+  dir: /var/log/patroni
+  file_num: 4
+  file_size: 25000000
+  loggers:
+    postgres.postmaster: INFO
+#    urllib3: DEBUG
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: test-db1:8008
+  authentication:
+    username: patroni
+    password: patroni
+
+etcd:
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    master_start_timeout: 300
+    synchronous_mode: 'on'
+    synchronous_node_count: 1
+    postgresql:
+      use_pg_rewind: true
+      pg_hba:
+        - local   all             all                                     peer
+        - host    all             all             127.0.0.1/32            md5
+        - local   replication     all                                     peer
+        - host    replication     all             127.0.0.1/32            md5
+        - host    replication     replicator      samenet                 md5
+        - host    all             all             samenet                 md5
+      use_slots: true
+      parameters:
+        wal_level: replica
+        wal_keep_segments: 8
+        unix_socket_directories: '/tmp/'
+        hot_standby: "on"
+        max_wal_senders: 5
+        max_replication_slots: 5
+        lc_messages: en_US.UTF-8
+        logging_collector: on
+        log_directory: 'log'
+        checkpoint_timeout: 30
+        synchronous_commit: 'on'
+        synchronous_standby_names: 'ANY 1 (test-db1,test-db2)'
+
+        max_connections: 40
+        shared_buffers: '512MB'
+        effective_cache_size: '1536MB'
+        maintenance_work_mem: '128MB'
+        checkpoint_completion_target: 0.9
+        wal_buffers: '16MB'
+        default_statistics_target: 100
+        random_page_cost: 1.1
+        effective_io_concurrency: 200
+        work_mem: '3276kB'
+        huge_pages: 'off'
+        min_wal_size: '1GB'
+        max_wal_size: '4GB'
+        
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+    - locale: ru_RU.UTF-8
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: test-db1:5432
+  config_dir: /pgdata/main
+  bin_dir: /opt/pgpro/xver-xpg/bin/
+  data_dir: /pgdata/main
+  pgpass: /tmp/pgpass
+  authentication:
+    superuser:
+      username: postgres
+      password: 'posadmin'
+    replication:
+      username: replicator
+      password: 'repadmin'
+    rewind:
+      username: postgres
+      password: 'posadmin'
+
+  parameters:
+    logging_collector: on
+    log_directory: 'log'
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false
 ```
+// предустановлено, что одна реплика синхронная
+// с версии patroni 4.0 - убрана ветка bootstrap.users
+
+
+- файл настройки службы (daemon systemd) для Patroni ( одинаковый на всех хостах) 
+```
+[Unit]
+Description=Runners to orchestrate a high-availability PostgreSQL
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=postgres
+Group=postgres
+ExecStart=/usr/local/bin/patroni /etc/patroni/patroni.yml
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=process
+TimeoutSec=30
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
 ```
 
 - запускаем службы Patroni на хостах кластера СУБД
