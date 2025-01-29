@@ -182,7 +182,7 @@ sudo chown -R postgres: /pgdata
 sudo chmod 750 /pgdata
 ```
 
-#### Установка и настройка Patroni
+#### Установка Patroni
 
 - Загружаем подготовленный пакет Patroni для оффлайн установки и дополниетльные пакеты<br>
 ```
@@ -284,6 +284,7 @@ restapi:
     password: patroni
 
 etcd:
+  hosts: 192.168.1.151:2379,192.168.1.152:2379,192.168.1.153:2379
 
 bootstrap:
   dcs:
@@ -307,13 +308,11 @@ bootstrap:
       parameters:
         wal_level: replica
         wal_keep_segments: 8
-        unix_socket_directories: '/tmp/'
         hot_standby: "on"
         max_wal_senders: 5
         max_replication_slots: 5
         lc_messages: en_US.UTF-8
         logging_collector: on
-        log_directory: 'log'
         checkpoint_timeout: 30
         synchronous_commit: 'on'
         synchronous_standby_names: 'ANY 1 (test-db1,test-db2)'
@@ -331,6 +330,10 @@ bootstrap:
         huge_pages: 'off'
         min_wal_size: '1GB'
         max_wal_size: '4GB'
+        shared_preload_libraries: pg_stat_statements
+        pg_stat_statements.max: 10000
+        pg_stat_statements.track: all
+        pg_stat_statements.save: off
         
   initdb:
     - encoding: UTF8
@@ -343,7 +346,7 @@ postgresql:
   config_dir: /pgdata/test
   bin_dir: /opt/pgpro/1c-17/bin/
   data_dir: /pgdata/test
-  pgpass: ~postgres/_pgpass
+  pgpass: ~postgres/.pgpass_patroni
   authentication:
     superuser:
       username: postgres
@@ -356,8 +359,10 @@ postgresql:
       password: 'posadmin'
 
   parameters:
+    unix_socket_directories: '/var/run/postgres'
+    stats_temp_directory: '/var/lib/pgsql_stats_tmp'
     logging_collector: on
-    log_directory: 'log'
+    log_directory: '/var/log/postgres'
 
 tags:
   nofailover: false
@@ -394,7 +399,15 @@ WantedBy=multi-user.target
 ```
 ```
 
+- дополнительные настройки для CLI
+```
+sudo su - postgres -c "echo 'export PATRONI_CONFIGURATION=/etc/patroni/patroni.yml' >> ~postgres/.profile"
+sudo su - postgres -c "echo 'export PATRONICTL_CONFIG_FILE=/etc/patroni/patroni.yml' >> ~postgres/.profile"
+```
+
+
 - проверяем работоспособность кластера
+( работаем по пользователем postgres )
 ```
 ```
 
