@@ -247,7 +247,15 @@ cd patroni-2025-01
 
 #### Настраиваем Patroni
 
-- шаблон файла настроек Patroni ( исправляем параметры для каждого хоста )
+- подготавливаем каталоги 
+```
+sudo mkdir /etc/patroni /var/log/patroni
+sudo chown -R postgres: /etc/patroni /var/log/patroni
+sudo chmod 700 /etc/patroni /var/log/patroni
+```
+
+- файла настроек Patroni ( исправляем параметры для каждого хоста )<br>
+( /etc/patroni/patroni.yml )
 ```
 name: test-db1
 namespace: /db/
@@ -332,10 +340,10 @@ bootstrap:
 postgresql:
   listen: 0.0.0.0:5432
   connect_address: test-db1:5432
-  config_dir: /pgdata/main
-  bin_dir: /opt/pgpro/xver-xpg/bin/
-  data_dir: /pgdata/main
-  pgpass: /tmp/pgpass
+  config_dir: /pgdata/test
+  bin_dir: /opt/pgpro/1c-17/bin/
+  data_dir: /pgdata/test
+  pgpass: ~postgres/_pgpass
   authentication:
     superuser:
       username: postgres
@@ -361,7 +369,8 @@ tags:
 // с версии patroni 4.0 - убрана ветка bootstrap.users
 
 
-- файл настройки службы (daemon systemd) для Patroni ( одинаковый на всех хостах) 
+- файл настройки службы (daemon systemd) для Patroni ( одинаковый на всех хостах)<br>
+( /etc/systemd/system/patroni.service ) 
 ```
 [Unit]
 Description=Runners to orchestrate a high-availability PostgreSQL
