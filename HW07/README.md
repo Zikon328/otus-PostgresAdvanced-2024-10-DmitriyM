@@ -249,9 +249,9 @@ cd patroni-2025-01
 
 - подготавливаем каталоги 
 ```
-sudo mkdir /etc/patroni /var/log/patroni
-sudo chown -R postgres: /etc/patroni /var/log/patroni
-sudo chmod 700 /etc/patroni /var/log/patroni
+sudo mkdir /etc/patroni /var/log/patroni /var/log/postgres
+sudo chown -R postgres: /etc/patroni /var/log/patroni /var/log/postgres
+sudo chmod 700 /etc/patroni /var/log/patroni /var/log/postgres
 ```
 
 - файла настроек Patroni ( исправляем параметры для каждого хоста )<br>
