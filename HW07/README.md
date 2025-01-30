@@ -536,6 +536,17 @@ listen stats
         stats auth admin:admin_pass
 ```
 
+__- запускаем HAProxy__
+```
+sudo systemctl daemon-reload
+sudo systemctl start haproxy
+```
+
+
+![HAProxy](Images/screen2.png)
+
+
+
 
 ### __Итоги__ 
 
@@ -548,8 +559,6 @@ HAproxy получает запросы от клиентов по сети №1
 #### __в момент загрузки демо базы test-db2 - Leader__
 
 ![Работа 6-ти ВМ - htop](Images/screen1.png)
-
-![HAProxy](Images/screen2.png)
 
 
 
