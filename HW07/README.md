@@ -10,12 +10,42 @@ __- настроим 7 виртуальных машин__
 
 - сеть для DCS сделаем отдельной  [ 192.168.1.0 ]
 - поэтому на хостах СУБД по две сетевые и по два адреса из разных сегментов [ 192.168.1.0, 192.168.20.0 ]
-- на Proxy также два сегмента сети  [ 192.168.20.0 192.168.1.0 ]
+- на Proxy также два сегмента сети  [ 192.168.20.100 192.168.1.100 ] 
+- Для подключения к кластеру (второй адрес прокси сервера) - 192.168.1.100:7432
+```
 
-- Astra Linux 1.8
+- настройки файлов hosts
+```
+  -----  для хостов DCS
+          192.168.1.151   test-dcs1  test-dcs1.test.local
+          192.168.1.152   test-dcs2  test-dcs2.test.local
+          192.168.1.153   test-dcs3  test-dcs3.test.local
+          192.168.1.141   test-db1   test-db1.test.local
+          192.168.1.142   test-db2   test-db2.test.local
+          192.168.1.143   test-db3   test-db3.test.local
+
+  -----  для хостов СУБД
+          192.168.1.151   test-dcs1  test-dcs1.test.local
+          192.168.1.152   test-dcs2  test-dcs2.test.local
+          192.168.1.153   test-dcs3  test-dcs3.test.local
+          192.168.20.100   test-proxy  test-proxy.test.local
+          192.168.20.141   test-db1   test-db1.test.local
+          192.168.20.142   test-db2   test-db2.test.local
+          192.168.20.143   test-db3   test-db3.test.local
+
+  -----  для прокси
+          192.168.1.100   test-proxy  test-proxy.test.local
+          192.168.20.141   test-db1   test-db1.test.local
+          192.168.20.142   test-db2   test-db2.test.local
+          192.168.20.143   test-db3   test-db3.test.local
+```
+
+- программное обеспечение
+```
+- Astra Linux 1.8  (based on Debian 12)
 - Etcd 3.5.17
-- Patroni 4.0.4
-- PostgresPro 1C 16
+- Patroni 4.0.4 (Python 3.11)
+- PostgresPro 1C 16  (free edition PostgresPro)
 - HaProxy 3.1.2
 ```
 
@@ -206,7 +236,7 @@ tar -zxvf patroni-2025-01.tar.gz
 ```
 
 __- скрипт установки и обновления Patroni оффлайн - pupdate.sh__<br>
-_(если параметр задан 'etcd' устанавливается клиент для etcd - иначе - клиент для consul)_<br>
+_(если параметр 'etcd' или 'etcd3' устанавливается клиент для etcd - иначе - клиент для consul)_<br>
 ```
 #!/bin/bash
 
@@ -221,22 +251,31 @@ sudo python3 -m pip install --upgrade $OPTI -f $WHLPATH/ pip
 sudo pip install $OPTI -f $WHLPATH/ setuptools
 sudo pip install $OPTI -f $WHLPATH/ wheel
 
+
 case "$1" in
   etcd)
-    #-- for ETCD - use this pack
+    #-- for ETCD - use this pack  
     sudo pip install $OPTI -f $WHLPATH/ python_etcd
     ;;
+  etcd3)
+    #-- for ETCD3 - use this pack  
+    sudo pip install $OPTI -f $WHLPATH/ etcd3
+    ;;
   *)
-    #-- for Consul - use this pack
+    #-- for Consul - use this pack  
     sudo pip install $OPTI -f $WHLPATH/ py_consul
     ;;
 esac
+
 
 sudo pip install $OPTI -f $WHLPATH/ psycopg
 sudo pip install $OPTI -f $WHLPATH/ psycopg_binary
 
 sudo pip install $OPTI -f $WHLPATH/ patroni
+
 ```
+_( в конфигурации Patroni указываем раздел -  etcd , etcd3 , consul )_<br>
+_( драйвер py_consul поддерживается Patroni с версии 4.0.4 )_
 
 __- запускаем скрипт__
 ```
@@ -283,7 +322,7 @@ restapi:
     username: patroni
     password: patroni
 
-etcd:
+etcd3:
   hosts: 192.168.1.151:2379,192.168.1.152:2379,192.168.1.153:2379
 
 bootstrap:
@@ -459,7 +498,76 @@ postgres@test-db2:~$ patronictl list
 
 #### __Настройка HAProxy__
 
+__- устанавливаем HAProxy__
+```
+```
 
+__- конфигурация HAProxy__<br>
+_( /etc/haproxy/haproxy.cfg )_
+```
+global
+        log /dev/log local0
+        log /dev/log local1 notice
+        chroot /var/lib/haproxy
+        stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+
+defaults
+        log global
+        option tcplog
+        option dontlognull
+        timeout connect 5000
+        timeout client 50000
+        timeout server 50000
+        errorfile 400 /etc/haproxy/errors/400.http
+        errorfile 403 /etc/haproxy/errors/403.http
+        errorfile 408 /etc/haproxy/errors/408.http
+        errorfile 500 /etc/haproxy/errors/500.http
+        errorfile 502 /etc/haproxy/errors/502.http
+        errorfile 503 /etc/haproxy/errors/503.http
+        errorfile 504 /etc/haproxy/errors/504.http
+
+        frontend postgres_frontend
+        bind 192.168.1.100:7432
+        mode tcp
+        default_backend postgres_backend
+
+        backend postgres_backend
+        mode tcp
+        balance roundrobin
+        option tcp-check
+        default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+        server pgsql1 192.168.20.141:5432 check
+        server pgsql2 192.168.20.142:5432 check
+        server pgsql3 192.168.20.143:5432 check
+
+        listen stats
+        bind 192.168.1.100:8404
+        mode http
+        stats enable
+        stats uri /stats
+        stats refresh 10s
+        stats auth admin:admin_pass
+```
+
+### __Итоги__ 
+
+Получился кластер с разделением трафика по разным сетям<br>
+HAproxy получает запросы от клиентов по сети №1 , а работает с БД по сети №2<br>
+Также сервера БД между собой репликация по сети №2 , а доступ к DCS по сети №1
+
+
+
+#### __в момент загрузки демо базы__
+
+
+
+### дополнительно
+
+- настройка кластера -  Consul + Patroni(+Callback)
 
 
 
