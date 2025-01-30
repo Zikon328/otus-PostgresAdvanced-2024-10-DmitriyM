@@ -500,51 +500,34 @@ postgres@test-db2:~$ patronictl list
 
 __- устанавливаем HAProxy__
 ```
+sudo apt install haproxy
 ```
 
 __- конфигурация HAProxy__<br>
 _( /etc/haproxy/haproxy.cfg )_
 ```
 global
-        log /dev/log local0
-        log /dev/log local1 notice
-        chroot /var/lib/haproxy
-        stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
-        stats timeout 30s
-        user haproxy
-        group haproxy
-        daemon
+    maxconn 100
 
 defaults
-        log global
-        option tcplog
-        option dontlognull
-        timeout connect 5000
-        timeout client 50000
-        timeout server 50000
-        errorfile 400 /etc/haproxy/errors/400.http
-        errorfile 403 /etc/haproxy/errors/403.http
-        errorfile 408 /etc/haproxy/errors/408.http
-        errorfile 500 /etc/haproxy/errors/500.http
-        errorfile 502 /etc/haproxy/errors/502.http
-        errorfile 503 /etc/haproxy/errors/503.http
-        errorfile 504 /etc/haproxy/errors/504.http
+    log global
+    mode tcp
+    retries 2
+    timeout client 30m
+    timeout connect 4s
+    timeout server 30m
+    timeout check 5s
 
-        frontend postgres_frontend
-        bind 192.168.1.100:7432
-        mode tcp
-        default_backend postgres_backend
-
-        backend postgres_backend
-        mode tcp
-        balance roundrobin
-        option tcp-check
+listen postgres
+        bind *:7432
+        option httpchk
+        http-check expect status 200
         default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
-        server pgsql1 192.168.20.141:5432 check
-        server pgsql2 192.168.20.142:5432 check
-        server pgsql3 192.168.20.143:5432 check
+        server test-db1 192.168.20.141:5432 check port 8008
+        server test-db2 192.168.20.142:5432 check port 8008
+        server test-db3 192.168.20.143:5432 check port 8008
 
-        listen stats
+listen stats
         bind 192.168.1.100:8404
         mode http
         stats enable
@@ -552,6 +535,7 @@ defaults
         stats refresh 10s
         stats auth admin:admin_pass
 ```
+
 
 ### __Итоги__ 
 
@@ -561,13 +545,16 @@ HAproxy получает запросы от клиентов по сети №1
 
 
 
-#### __в момент загрузки демо базы__
+#### __в момент загрузки демо базы test-db2 - Leader__
+
+![Работа 6-ти ВМ - htop](Images/screen1.png)
+
+![HAProxy](Images/screen2.png)
 
 
 
 ### дополнительно
 
-- настройка кластера -  Consul + Patroni(+Callback)
-
+- скоро будет - [настройка кластера -  Consul + Patroni(+Callback)](https://github.com/Zikon328/pg-times/tree/main/PG_Clusters/Patroni_Consul)
 
 
