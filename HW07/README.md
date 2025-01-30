@@ -557,4 +557,6 @@ HAproxy получает запросы от клиентов по сети №1
 
 - скоро будет - [настройка кластера -  Consul + Patroni(+Callback)](https://github.com/Zikon328/pg-times/tree/main/PG_Clusters/Patroni_Consul)
 
+- пакеты что использовались есть [здесь](https://disk.yandex.ru/d/pdveL6eOHkMNKQ)
+
 
