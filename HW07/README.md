@@ -570,8 +570,10 @@ HAproxy получает запросы от клиентов по сети №1
 ```bash
 #!/bin/bash
 
-ROLE=$(curl -s http://127.0.0.1:8008 | jq .role | tr -d '"')
-SYNC=$(curl -s http://127.0.0.1:8008 | jq .sync_standby)
+REST=$(curl -s http://127.0.0.1:8008)
+
+ROLE=$(echo $REST | jq .role | tr -d '"')
+SYNC=$(echo $REST | jq .sync_standby)
 
 if [ "$ROLE" = "replica" ] ; then
     if [ "$SYNC" = "true" ] ; then
@@ -587,8 +589,9 @@ fi
 ```
 // должны быть установлены программы - curl, jq, tr
 
+-----
 
-#### __в момент загрузки демо базы test-db2 - Leader__
+### __HTOP на 6-ти хостах  в момент загрузки демо базы (test-db2 - Leader)__
 
 ![Работа 6-ти ВМ - htop](Images/screen1.png)
 
