@@ -6,7 +6,7 @@ HW03 - Яндекс Облако - Использование Managed Service fo
 HW04 - PostgreSQL и VKcloud, GCP, AWS, ЯО, Sbercloud<br>
 +HW05 - Настройка дисков для PostgreSQL<br>
 +HW06 - Бэкапы БД PostgeSQL<br>
-HW07 - Кластер Patroni<br>
++HW07 - Кластер Patroni<br>
 HW08 - Тюнинг Постгреса
 HW09 - Разворачиваем и настраиваем БД с большими данными<br>
 HW10 - Развернуть HA кластер<br>
